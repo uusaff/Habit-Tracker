@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Logs
 logs
 *.log
@@ -22,3 +23,27 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+=======
+# dependencies
+node_modules/
+
+# production
+dist/
+
+# logs
+logs
+*.log
+npm-debug.log*
+
+# environment variables
+.env
+.env.local
+
+# editor files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+>>>>>>> daeedca6e0d595ca70e5001dada81d14b0b03801
