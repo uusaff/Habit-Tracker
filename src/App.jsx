@@ -68,26 +68,12 @@ function getWeekDates() {
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 function useTrackerStorage() {
-export default function HabitTracker() {
-  const [data, setData] = useTrackerStorage();
-  const [quoteIndex, setQuoteIndex] = useState(0);
-  const [showAddForm, setShowAddForm] = useState(false);
-
-
-  //
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribe();
-  }, []);
-  
+  const [data, setData] = useState(null);
+  const loadedRef = useRef(false);
 
   useEffect(() => {
     try {
-      // Use standard browser localStorage instead of window.storage
+      // Use standard browser localStorage
       const res = localStorage.getItem(STORAGE_KEY);
       setData(res ? JSON.parse(res) : DEFAULT_DATA);
     } catch (e) {
@@ -107,7 +93,7 @@ export default function HabitTracker() {
   }, [data]);
 
   return [data, setData];
-}
+} // <--- Yeh bracket dono functions ko alag karta hai
 
 export default function HabitTracker() {
   const [data, setData] = useTrackerStorage();
@@ -117,19 +103,32 @@ export default function HabitTracker() {
   const [newIcon, setNewIcon] = useState('Footprints');
   const [newColor, setNewColor] = useState('teal');
 
+  // Firebase Auth State
+  const [user, setUser] = useState(null);
+
   useEffect(() => {
-    const interval = setInterval(() => {
-      setQuoteIndex((i) => (i + 1) % QUOTES.length);
-    }, 6000);
-    return () => clearInterval(interval);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
   }, []);
 
-  const weekDates = useMemo(() => getWeekDates(), []);
-  const today = useMemo(() => new Date(), []);
-  const todayKey = dateKey(today);
-
+  // Screen Switching Logic
   if (!user) {
     return <LoginScreen />;
+  }
+
+  // Loading State
+  if (!data) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-50 via-orange-50 to-amber-50">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 1.1, ease: 'linear' }}
+          className="w-10 h-10 border-4 border-teal-400 border-t-transparent rounded-full"
+        />
+      </div>
+    );
   }
   
   if (!data) {
