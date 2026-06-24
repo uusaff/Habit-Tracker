@@ -68,33 +68,24 @@ function useTrackerStorage() {
   const loadedRef = useRef(false);
 
   useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        if (window.storage) {
-          const res = await window.storage.get(STORAGE_KEY);
-          if (mounted) setData(res ? JSON.parse(res.value) : DEFAULT_DATA);
-        } else if (mounted) {
-          setData(DEFAULT_DATA);
-        }
-      } catch (e) {
-        if (mounted) setData(DEFAULT_DATA);
-      } finally {
-        loadedRef.current = true;
-      }
-    })();
-    return () => { mounted = false; };
+    try {
+      // Use standard browser localStorage instead of window.storage
+      const res = localStorage.getItem(STORAGE_KEY);
+      setData(res ? JSON.parse(res) : DEFAULT_DATA);
+    } catch (e) {
+      setData(DEFAULT_DATA);
+    } finally {
+      loadedRef.current = true;
+    }
   }, []);
 
   useEffect(() => {
     if (!loadedRef.current || data === null) return;
-    (async () => {
-      try {
-        if (window.storage) await window.storage.set(STORAGE_KEY, JSON.stringify(data));
-      } catch (e) {
-        console.error('Could not save tracker data', e);
-      }
-    })();
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (e) {
+      console.error('Could not save tracker data', e);
+    }
   }, [data]);
 
   return [data, setData];
