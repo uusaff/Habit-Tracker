@@ -1,5 +1,8 @@
 import LoginScreen from './Login';
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from './firebase';
+import LoginScreen from './Login';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Footprints, BookOpen, Moon, Leaf, Dumbbell, Droplet, Brain, Heart,
@@ -65,8 +68,22 @@ function getWeekDates() {
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 function useTrackerStorage() {
-  const [data, setData] = useState(null);
-  const loadedRef = useRef(false);
+export default function HabitTracker() {
+  const [data, setData] = useTrackerStorage();
+  const [quoteIndex, setQuoteIndex] = useState(0);
+  const [showAddForm, setShowAddForm] = useState(false);
+
+
+  //
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
+  
 
   useEffect(() => {
     try {
@@ -111,6 +128,10 @@ export default function HabitTracker() {
   const today = useMemo(() => new Date(), []);
   const todayKey = dateKey(today);
 
+  if (!user) {
+    return <LoginScreen />;
+  }
+  
   if (!data) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-50 via-orange-50 to-amber-50">
