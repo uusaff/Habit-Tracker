@@ -92,7 +92,7 @@ function useTrackerStorage() {
   }, [data]);
 
   return [data, setData];
-} // <--- Yeh bracket dono functions ko alag karta hai
+} 
 
 export default function HabitTracker() {
   const [data, setData] = useTrackerStorage();
@@ -105,6 +105,15 @@ export default function HabitTracker() {
   // Firebase Auth State
   const [user, setUser] = useState(null);
 
+  // Quote Interval Hook
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setQuoteIndex((i) => (i + 1) % QUOTES.length);
+    }, 6000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Auth Listener Hook
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -112,24 +121,16 @@ export default function HabitTracker() {
     return () => unsubscribe();
   }, []);
 
-  // Screen Switching Logic
+  const weekDates = useMemo(() => getWeekDates(), []);
+  const today = useMemo(() => new Date(), []);
+  const todayKey = dateKey(today);
+
+  // Screen Switching Logic (Hooks ke BAAD)
   if (!user) {
     return <LoginScreen />;
   }
 
   // Loading State
-  if (!data) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-50 via-orange-50 to-amber-50">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1.1, ease: 'linear' }}
-          className="w-10 h-10 border-4 border-teal-400 border-t-transparent rounded-full"
-        />
-      </div>
-    );
-  }
-  
   if (!data) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-50 via-orange-50 to-amber-50">
