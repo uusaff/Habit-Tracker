@@ -7,12 +7,10 @@ import {
   Footprints, BookOpen, Moon, Leaf, Dumbbell, Droplet, Brain, Heart,
   Music, Camera, Coffee, PenLine, Plus, Trash2, Check,
   Quote as QuoteIcon, Flame, TrendingUp,
-  // ADDED: icons for the profile section, monthly view, and dashboard stats
   User, Calendar, Edit3, X, Award, Target,
 } from 'lucide-react';
 
 const STORAGE_KEY = 'tropical-habit-tracker-v1';
-// ADDED: separate storage key for profile data so old habit data stays untouched/compatible
 const PROFILE_STORAGE_KEY = 'tropical-habit-tracker-profile-v1';
 
 const ICONS = { Footprints, BookOpen, Moon, Leaf, Dumbbell, Droplet, Brain, Heart, Music, Camera, Coffee, PenLine };
@@ -49,8 +47,6 @@ const DEFAULT_HABITS = [
 ];
 
 const DEFAULT_DATA = { habits: DEFAULT_HABITS, checkins: {} };
-
-// ADDED: default shape for the user profile (kept in its own storage key)
 const DEFAULT_PROFILE = { name: '', age: '', weight: '', height: '' };
 
 function pad(n) { return n < 10 ? '0' + n : '' + n; }
@@ -73,7 +69,6 @@ function getWeekDates() {
 }
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-// ===== ADDED: Monthly view helpers =====
 function daysInMonth(year, month) {
   return new Date(year, month + 1, 0).getDate();
 }
@@ -81,7 +76,7 @@ function getMonthDates(year, month) {
   const total = daysInMonth(year, month);
   return Array.from({ length: total }, (_, i) => new Date(year, month, i + 1));
 }
-// Longest historical streak ever achieved for a habit (scans every recorded check-in date)
+
 function getLongestStreak(habitId, checkins) {
   const dates = Object.keys(checkins)
     .filter((k) => checkins[k]?.[habitId])
@@ -105,7 +100,6 @@ function useTrackerStorage() {
 
   useEffect(() => {
     try {
-      // Use standard browser localStorage
       const res = localStorage.getItem(STORAGE_KEY);
       setData(res ? JSON.parse(res) : DEFAULT_DATA);
     } catch (e) {
@@ -127,7 +121,6 @@ function useTrackerStorage() {
   return [data, setData];
 }
 
-// ===== ADDED: Profile storage hook — mirrors useTrackerStorage but uses its own key =====
 function useProfileStorage() {
   const [profile, setProfile] = useState(null);
   const loadedRef = useRef(false);
@@ -155,7 +148,6 @@ function useProfileStorage() {
   return [profile, setProfile];
 }
 
-// ===== ADDED: small reusable stat card used in the new Dashboard Stats row =====
 function StatCard({ icon: Icon, label, value, color }) {
   const c = COLORS[color] || COLORS.teal;
   return (
@@ -178,27 +170,21 @@ function StatCard({ icon: Icon, label, value, color }) {
 
 export default function HabitTracker() {
   const [data, setData] = useTrackerStorage();
-  const [profile, setProfile] = useProfileStorage(); // ADDED: profile state
+  const [profile, setProfile] = useProfileStorage();
   const [quoteIndex, setQuoteIndex] = useState(0);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newName, setNewName] = useState('');
   const [newIcon, setNewIcon] = useState('Footprints');
   const [newColor, setNewColor] = useState('teal');
 
-  // ADDED: profile edit form state
   const [showProfileForm, setShowProfileForm] = useState(false);
   const [pName, setPName] = useState('');
   const [pAge, setPAge] = useState('');
   const [pWeight, setPWeight] = useState('');
   const [pHeight, setPHeight] = useState('');
-
-  // ADDED: Weekly / Monthly view toggle
   const [viewMode, setViewMode] = useState('weekly');
-
-  // Firebase Auth State
   const [user, setUser] = useState(null);
 
-  // Quote Interval Hook
   useEffect(() => {
     const interval = setInterval(() => {
       setQuoteIndex((i) => (i + 1) % QUOTES.length);
@@ -206,7 +192,6 @@ export default function HabitTracker() {
     return () => clearInterval(interval);
   }, []);
 
-  // Auth Listener Hook
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -218,18 +203,84 @@ export default function HabitTracker() {
   const today = useMemo(() => new Date(), []);
   const todayKey = dateKey(today);
 
-  // ADDED: current-month context for the Monthly Tracker (hooks must run before any early return)
   const year = today.getFullYear();
   const month = today.getMonth();
   const monthDates = useMemo(() => getMonthDates(year, month), [year, month]);
   const daysElapsed = today.getDate();
 
-  // Screen Switching Logic (Hooks ke BAAD)
+  // safely destructure so hooks don't crash before data loads
+  const habits = data?.habits || [];
+  const checkins = data?.checkins || {};
+
+  const getStreak = (habitId) => {
+    let streak = 0;
+    const cursor = new Date();
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const k = dateKey(cursor);
+      if (checkins[k]?.[habitId]) {
+        streak++;
+        cursor.setDate(cursor.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+    return streak;
+  };
+
+  const habitMonthlyCount = (habitId) => {
+    let count = 0;
+    monthDates.forEach((d) => {
+      if (checkins[dateKey(d)]?.[habitId]) count++;
+    });
+    return count;
+  };
+
+  // Move ALL useMemos above the early returns!
+  const totalCheckins = useMemo(() => {
+    let count = 0;
+    Object.values(checkins).forEach((day) => {
+      Object.values(day).forEach((v) => { if (v) count++; });
+    });
+    return count;
+  }, [checkins]);
+
+  const currentStreak = useMemo(
+    () => habits.reduce((max, h) => Math.max(max, getStreak(h.id)), 0),
+    [habits, checkins]
+  );
+
+  const bestStreakEver = useMemo(
+    () => habits.reduce((max, h) => Math.max(max, getLongestStreak(h.id, checkins)), 0),
+    [habits, checkins]
+  );
+
+  const monthlyCompleted = useMemo(() => {
+    let count = 0;
+    monthDates.forEach((d) => {
+      if (d > today) return;
+      const k = dateKey(d);
+      habits.forEach((h) => { if (checkins[k]?.[h.id]) count++; });
+    });
+    return count;
+  }, [monthDates, habits, checkins, today]);
+
+  const bestHabit = useMemo(() => {
+    if (habits.length === 0) return null;
+    let best = habits[0];
+    let bestCount = habitMonthlyCount(best.id);
+    habits.forEach((h) => {
+      const c = habitMonthlyCount(h.id);
+      if (c > bestCount) { best = h; bestCount = c; }
+    });
+    return bestCount > 0 ? { habit: best, count: bestCount } : null;
+  }, [habits, checkins, monthDates]);
+
+  // Screen Switching Logic (Now perfectly safe because all hooks have run)
   if (!user) {
     return <LoginScreen />;
   }
 
-  // Loading State (ADDED: also wait for the profile to finish loading)
   if (!data || !profile) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cyan-50 via-teal-50 to-amber-50">
@@ -242,7 +293,10 @@ export default function HabitTracker() {
     );
   }
 
-  const { habits, checkins } = data;
+  // General functions and UI variables below
+  const monthTotalDays = monthDates.length;
+  const monthlyTotalPossible = habits.length * daysElapsed;
+  const monthlyRate = monthlyTotalPossible === 0 ? 0 : Math.round((monthlyCompleted / monthlyTotalPossible) * 100);
 
   const toggleCheckin = (habitId, dKey) => {
     setData((prev) => {
@@ -269,7 +323,6 @@ export default function HabitTracker() {
     setData((prev) => ({ ...prev, habits: prev.habits.filter((h) => h.id !== id) }));
   };
 
-  // ADDED: open the profile form pre-filled with whatever is currently saved
   const openProfileForm = () => {
     setPName(profile.name || '');
     setPAge(profile.age || '');
@@ -278,7 +331,6 @@ export default function HabitTracker() {
     setShowProfileForm(true);
   };
 
-  // ADDED: persist profile edits to localStorage (via useProfileStorage)
   const saveProfile = () => {
     setProfile({ name: pName.trim(), age: pAge, weight: pWeight, height: pHeight });
     setShowProfileForm(false);
@@ -288,77 +340,6 @@ export default function HabitTracker() {
   const totalHabits = habits.length;
   const pct = totalHabits === 0 ? 0 : Math.round((todayChecked / totalHabits) * 100);
 
-  const getStreak = (habitId) => {
-    let streak = 0;
-    const cursor = new Date();
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      const k = dateKey(cursor);
-      if (checkins[k]?.[habitId]) {
-        streak++;
-        cursor.setDate(cursor.getDate() - 1);
-      } else {
-        break;
-      }
-    }
-    return streak;
-  };
-
-  // ===== ADDED: Dashboard-wide stats =====
-  const totalCheckins = useMemo(() => {
-    let count = 0;
-    Object.values(checkins).forEach((day) => {
-      Object.values(day).forEach((v) => { if (v) count++; });
-    });
-    return count;
-  }, [checkins]);
-
-  const currentStreak = useMemo(
-    () => habits.reduce((max, h) => Math.max(max, getStreak(h.id)), 0),
-    [habits, checkins]
-  );
-
-  const bestStreakEver = useMemo(
-    () => habits.reduce((max, h) => Math.max(max, getLongestStreak(h.id, checkins)), 0),
-    [habits, checkins]
-  );
-
-  // ADDED: helper — completions for one habit within the current month
-  const habitMonthlyCount = (habitId) => {
-    let count = 0;
-    monthDates.forEach((d) => {
-      if (checkins[dateKey(d)]?.[habitId]) count++;
-    });
-    return count;
-  };
-
-  const monthTotalDays = monthDates.length;
-
-  const monthlyCompleted = useMemo(() => {
-    let count = 0;
-    monthDates.forEach((d) => {
-      if (d > today) return;
-      const k = dateKey(d);
-      habits.forEach((h) => { if (checkins[k]?.[h.id]) count++; });
-    });
-    return count;
-  }, [monthDates, habits, checkins]);
-
-  const monthlyTotalPossible = habits.length * daysElapsed;
-  const monthlyRate = monthlyTotalPossible === 0 ? 0 : Math.round((monthlyCompleted / monthlyTotalPossible) * 100);
-
-  // ADDED: best performing habit this month (used in the Monthly Tracker summary)
-  const bestHabit = useMemo(() => {
-    if (habits.length === 0) return null;
-    let best = habits[0];
-    let bestCount = habitMonthlyCount(best.id);
-    habits.forEach((h) => {
-      const c = habitMonthlyCount(h.id);
-      if (c > bestCount) { best = h; bestCount = c; }
-    });
-    return bestCount > 0 ? { habit: best, count: bestCount } : null;
-  }, [habits, checkins, monthDates]);
-
   const radius = 54;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (pct / 100) * circumference;
@@ -367,8 +348,6 @@ export default function HabitTracker() {
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-cyan-50 via-teal-50 to-amber-50 font-sans">
-
-      {/* Top GitHub Header */}
       <header className="relative z-20 w-full bg-white/40 backdrop-blur-xl border-b border-white/60 shadow-sm px-4 sm:px-6 py-3 flex justify-between items-center">
         <span className="font-bold text-stone-700 tracking-wide text-sm sm:text-base">Habit Tracker</span>
         <a
@@ -377,7 +356,6 @@ export default function HabitTracker() {
           rel="noopener noreferrer"
           className="flex items-center gap-1.5 text-sm font-medium text-stone-700 hover:text-teal-600 transition-colors bg-white/60 px-4 py-1.5 rounded-full border border-white/60 shadow-sm hover:shadow-md"
         >
-          {/* Replaced Lucide Github icon with inline SVG */}
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
             <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.2c3-.3 6-1.5 6-6.5a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 5 3 6.2 6 6.5a4.8 4.8 0 0 0-1 3.2v4"></path>
             <path d="M9 18c-4.5 1.6-5-2.5-5-3"></path>
@@ -386,16 +364,13 @@ export default function HabitTracker() {
         </a>
       </header>
 
-      {/* Decorative Background Elements */}
       <div className="absolute top-0 -left-24 w-72 h-72 bg-teal-300/40 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute top-1/3 -right-24 w-80 h-80 bg-orange-300/40 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-1/4 w-72 h-72 bg-emerald-300/30 rounded-full blur-3xl pointer-events-none" />
-      {/* ADDED: extra ocean-blue glow + subtle palm-leaf silhouettes for the tropical theme upgrade */}
       <div className="absolute top-10 right-1/3 w-64 h-64 bg-sky-300/30 rounded-full blur-3xl pointer-events-none" />
       <Leaf className="absolute -top-8 -left-8 w-40 h-40 text-emerald-700/[0.07] rotate-[20deg] pointer-events-none" />
       <Leaf className="absolute bottom-16 -right-10 w-52 h-52 text-emerald-700/[0.07] -rotate-[35deg] pointer-events-none" />
       <Leaf className="absolute top-1/2 left-[8%] w-20 h-20 text-teal-700/[0.06] rotate-[150deg] pointer-events-none hidden sm:block" />
-      {/* ADDED: soft sandy-beach gradient strip along the bottom for an island feel */}
       <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-amber-200/40 to-transparent pointer-events-none" />
 
       <motion.div
@@ -414,7 +389,6 @@ export default function HabitTracker() {
           </div>
         </div>
 
-        {/* ===== ADDED: User Profile Section ===== */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -441,7 +415,6 @@ export default function HabitTracker() {
           </button>
         </motion.div>
 
-        {/* ===== ADDED: Profile edit form (modal overlay) ===== */}
         <AnimatePresence>
           {showProfileForm && (
             <motion.div
@@ -508,7 +481,6 @@ export default function HabitTracker() {
           )}
         </AnimatePresence>
 
-        {/* ===== ADDED: Dashboard Stats ===== */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
           <StatCard icon={Check} label="Total Check-ins" value={totalCheckins} color="teal" />
           <StatCard icon={Flame} label="Current Streak" value={`${currentStreak}d`} color="orange" />
@@ -568,7 +540,6 @@ export default function HabitTracker() {
 
           <div className="lg:col-span-2 bg-white/40 backdrop-blur-xl border border-white/60 rounded-3xl shadow-lg shadow-teal-100/50 p-5 sm:p-6">
             <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-              {/* ADDED: Weekly / Monthly tab toggle (replaces the static "This Week" heading) */}
               <div className="flex items-center gap-1.5 bg-white/50 rounded-full p-1">
                 <button
                   onClick={() => setViewMode('weekly')}
@@ -646,7 +617,6 @@ export default function HabitTracker() {
               )}
             </AnimatePresence>
 
-            {/* ===== Weekly view (original, unchanged) ===== */}
             {viewMode === 'weekly' && (
               <>
                 <div className="flex items-center gap-1 sm:gap-2 mb-2 px-1">
@@ -703,10 +673,7 @@ export default function HabitTracker() {
                           {weekDates.map((d, i) => {
                             const k = dateKey(d);
                             const checked = !!checkins[k]?.[habit.id];
-
-                            // Validation logic check: is the date strictly greater than today's string format
                             const isFuture = k > todayKey;
-
                             return (
                               <div key={i} className="flex-1 flex justify-center">
                                 <motion.button
@@ -748,12 +715,10 @@ export default function HabitTracker() {
               </>
             )}
 
-            {/* ===== ADDED: Monthly Tracker Table ===== */}
             {viewMode === 'monthly' && (
               <div>
                 <div className="overflow-x-auto -mx-1 pb-2">
                   <div className="min-w-max px-1">
-                    {/* header row of day numbers */}
                     <div className="flex items-center gap-1 mb-2">
                       <div className={`${LABEL_WIDTH} shrink-0`} />
                       {monthDates.map((d) => {
@@ -819,7 +784,6 @@ export default function HabitTracker() {
                   </div>
                 </div>
 
-                {/* ADDED: Monthly summary footer */}
                 {habits.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-stone-200/60 text-xs">
                     <span className="bg-white/60 px-3 py-1.5 rounded-full text-stone-600">
