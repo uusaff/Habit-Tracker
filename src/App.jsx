@@ -7,7 +7,7 @@ import {
   Footprints, BookOpen, Moon, Leaf, Dumbbell, Droplet, Brain, Heart,
   Music, Camera, Coffee, PenLine, Plus, Trash2, Check,
   Quote as QuoteIcon, Flame, TrendingUp,
-  User, Calendar, Edit3, X, Award, Target,
+  User, Calendar, Edit3, X, Award, Target, Sun
 } from 'lucide-react';
 
 const STORAGE_KEY = 'tropical-habit-tracker-v1';
@@ -155,14 +155,14 @@ function StatCard({ icon: Icon, label, value, color }) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="bg-white/40 backdrop-blur-xl border border-white/60 rounded-2xl shadow-md p-4 flex items-center gap-3"
+      className="bg-white/40 dark:bg-stone-800/40 backdrop-blur-xl border border-white/60 dark:border-stone-700/60 rounded-2xl shadow-md p-4 flex items-center gap-3"
     >
       <div className={`w-10 h-10 rounded-xl ${c.light} flex items-center justify-center shrink-0`}>
         <Icon className={`w-5 h-5 ${c.text}`} />
       </div>
       <div className="min-w-0">
-        <p className="text-lg font-bold text-stone-800 leading-tight truncate">{value}</p>
-        <p className="text-[11px] text-stone-500 truncate">{label}</p>
+        <p className="text-lg font-bold text-stone-800 dark:text-white dark:text-white leading-tight truncate">{value}</p>
+        <p className="text-[11px] text-stone-500 dark:text-stone-400 truncate">{label}</p>
       </div>
     </motion.div>
   );
@@ -184,6 +184,25 @@ export default function HabitTracker() {
   const [pHeight, setPHeight] = useState('');
   const [viewMode, setViewMode] = useState('weekly');
   const [user, setUser] = useState(null);
+
+const [theme, setTheme] = useState(() => {
+    
+    return localStorage.getItem('theme') || 'light';
+  });
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -283,7 +302,7 @@ export default function HabitTracker() {
 
   if (!data || !profile) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cyan-50 via-teal-50 to-amber-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cyan-50 via-teal-50 to-amber-50 dark:from-stone-900 dark:via-stone-800 dark:to-teal-950 dark:text-stone-200 transition-colors duration-500">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ repeat: Infinity, duration: 1.1, ease: 'linear' }}
@@ -347,21 +366,32 @@ export default function HabitTracker() {
   const LABEL_WIDTH = 'w-32 sm:w-44';
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-cyan-50 via-teal-50 to-amber-50 font-sans">
-      <header className="relative z-20 w-full bg-white/40 backdrop-blur-xl border-b border-white/60 shadow-sm px-4 sm:px-6 py-3 flex justify-between items-center">
-        <span className="font-bold text-stone-700 tracking-wide text-sm sm:text-base">Habit Tracker</span>
-        <a
-          href="https://github.com/uusaff"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-1.5 text-sm font-medium text-stone-700 hover:text-teal-600 transition-colors bg-white/60 px-4 py-1.5 rounded-full border border-white/60 shadow-sm hover:shadow-md"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-            <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.2c3-.3 6-1.5 6-6.5a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 5 3 6.2 6 6.5a4.8 4.8 0 0 0-1 3.2v4"></path>
-            <path d="M9 18c-4.5 1.6-5-2.5-5-3"></path>
-          </svg>
-          uusaff
-        </a>
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-cyan-50 via-teal-50 to-amber-50 dark:from-stone-900 dark:via-stone-800 dark:to-teal-950 dark:text-stone-200 transition-colors duration-500 font-sans">
+    <header className="relative z-20 w-full bg-white/40 dark:bg-stone-900/40 backdrop-blur-xl border-b border-white/60 dark:border-stone-700/60 shadow-sm px-4 sm:px-6 py-3 flex justify-between items-center transition-colors">
+        <span className="font-bold text-stone-700 dark:text-stone-200 tracking-wide text-sm sm:text-base">Habit Tracker</span>
+        
+        <div className="flex items-center gap-3">
+          {/* 👇 Dark Mode Toggle Button 👇 */}
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-full bg-white/60 dark:bg-stone-800/60 border border-white/60 dark:border-stone-700/60 shadow-sm hover:shadow-md text-stone-700 dark:text-stone-300 transition-all"
+          >
+            {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+          </button>
+          
+          <a
+            href="https://github.com/uusaff"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-sm font-medium text-stone-700 dark:text-stone-100 dark:text-stone-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors bg-white/60 dark:bg-stone-800/60 px-4 py-1.5 rounded-full border border-white/60 dark:border-stone-700/60 shadow-sm hover:shadow-md"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+              <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.2c3-.3 6-1.5 6-6.5a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 5 3 6.2 6 6.5a4.8 4.8 0 0 0-1 3.2v4"></path>
+              <path d="M9 18c-4.5 1.6-5-2.5-5-3"></path>
+            </svg>
+            uusaff
+          </a>
+        </div>
       </header>
 
       <div className="absolute top-0 -left-24 w-72 h-72 bg-teal-300/40 rounded-full blur-3xl pointer-events-none" />
@@ -384,7 +414,7 @@ export default function HabitTracker() {
             🌴
           </div>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-stone-800 tracking-tight">Daily Progress</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-stone-800 dark:text-white tracking-tight">Daily Progress</h1>
             <p className="text-stone-500 text-sm">Stay consistent, stay tropical.</p>
           </div>
         </div>
@@ -393,13 +423,13 @@ export default function HabitTracker() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-white/40 backdrop-blur-xl border border-white/60 rounded-3xl shadow-lg shadow-emerald-100/50 p-5 sm:p-6 mb-6 flex flex-wrap items-center gap-4"
+          className="bg-white/40 dark:bg-stone-800/40 backdrop-blur-xl border border-white/60 dark:border-stone-700/60 rounded-3xl shadow-lg shadow-emerald-100/50 p-5 sm:p-6 mb-6 flex flex-wrap items-center gap-4"
         >
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-xl font-bold shrink-0 shadow-md">
             {profile.name ? profile.name.trim()[0].toUpperCase() : <User className="w-6 h-6" />}
           </div>
           <div className="flex-1 min-w-[140px]">
-            <p className="font-semibold text-stone-800">{profile.name || 'Add your name'}</p>
+            <p className="font-semibold text-stone-800 dark:text-white">{profile.name || 'Add your name'}</p>
             <div className="flex flex-wrap gap-3 text-xs text-stone-500 mt-1">
               {profile.age && <span>{profile.age} yrs</span>}
               {profile.weight && <span>{profile.weight} kg</span>}
@@ -432,7 +462,7 @@ export default function HabitTracker() {
                 className="bg-white/90 backdrop-blur-xl border border-white/70 rounded-3xl shadow-2xl p-6 w-full max-w-sm"
               >
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-stone-800">Your Profile</h3>
+                  <h3 className="font-semibold text-stone-800 dark:text-white">Your Profile</h3>
                   <button onClick={() => setShowProfileForm(false)} className="text-stone-400 hover:text-stone-600">
                     <X className="w-5 h-5" />
                   </button>
@@ -442,7 +472,7 @@ export default function HabitTracker() {
                     value={pName}
                     onChange={(e) => setPName(e.target.value)}
                     placeholder="Name"
-                    className="w-full px-3 py-2 rounded-xl bg-white border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
+                    className="w-full px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
                   />
                   <div className="grid grid-cols-3 gap-2">
                     <input
@@ -450,21 +480,21 @@ export default function HabitTracker() {
                       onChange={(e) => setPAge(e.target.value)}
                       type="number"
                       placeholder="Age"
-                      className="px-3 py-2 rounded-xl bg-white border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
+                      className="px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
                     />
                     <input
                       value={pWeight}
                       onChange={(e) => setPWeight(e.target.value)}
                       type="number"
                       placeholder="Weight kg"
-                      className="px-3 py-2 rounded-xl bg-white border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
+                      className="px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
                     />
                     <input
                       value={pHeight}
                       onChange={(e) => setPHeight(e.target.value)}
                       type="number"
                       placeholder="Height cm"
-                      className="px-3 py-2 rounded-xl bg-white border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
+                      className="px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
                     />
                   </div>
                 </div>
@@ -488,7 +518,7 @@ export default function HabitTracker() {
           <StatCard icon={Target} label="Monthly Rate" value={`${monthlyRate}%`} color="sky" />
         </div>
 
-        <div className="bg-white/40 backdrop-blur-xl border border-white/60 rounded-3xl shadow-lg shadow-orange-100/50 p-5 sm:p-6 mb-6 flex items-start gap-3">
+        <div className="bg-white/40 dark:bg-stone-800/40 backdrop-blur-xl border border-white/60 dark:border-stone-700/60 rounded-3xl shadow-lg shadow-orange-100/50 p-5 sm:p-6 mb-6 flex items-start gap-3">
           <QuoteIcon className="w-5 h-5 text-orange-400 shrink-0 mt-1" />
           <AnimatePresence mode="wait">
             <motion.p
@@ -505,7 +535,7 @@ export default function HabitTracker() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="bg-white/40 backdrop-blur-xl border border-white/60 rounded-3xl shadow-lg shadow-teal-100/50 p-6 flex flex-col items-center justify-center">
+          <div className="bg-white/40 dark:bg-stone-800/40 backdrop-blur-xl border border-white/60 dark:border-stone-700/60 rounded-3xl shadow-lg shadow-teal-100/50 p-6 flex flex-col items-center justify-center">
             <div className="relative w-36 h-36">
               <svg className="w-36 h-36 -rotate-90" viewBox="0 0 132 132">
                 <circle cx="66" cy="66" r={radius} fill="none" stroke="#e7e5e4" strokeWidth="12" />
@@ -521,7 +551,7 @@ export default function HabitTracker() {
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-3xl font-bold text-stone-800">{pct}%</span>
+                <span className="text-3xl font-bold text-stone-800 dark:text-white">{pct}%</span>
                 <span className="text-xs text-stone-500">{todayChecked}/{totalHabits} done</span>
               </div>
             </div>
@@ -538,7 +568,7 @@ export default function HabitTracker() {
             </div>
           </div>
 
-          <div className="lg:col-span-2 bg-white/40 backdrop-blur-xl border border-white/60 rounded-3xl shadow-lg shadow-teal-100/50 p-5 sm:p-6">
+          <div className="lg:col-span-2 bg-white/40 dark:bg-stone-800/40 backdrop-blur-xl border border-white/60 dark:border-stone-700/60 rounded-3xl shadow-lg shadow-teal-100/50 p-5 sm:p-6">
             <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
               <div className="flex items-center gap-1.5 bg-white/50 rounded-full p-1">
                 <button
@@ -579,7 +609,7 @@ export default function HabitTracker() {
                       value={newName}
                       onChange={(e) => setNewName(e.target.value)}
                       placeholder="Habit name..."
-                      className="w-full px-3 py-2 rounded-xl bg-white border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
+                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
                     />
                     <div className="flex flex-wrap gap-2">
                       {ICON_KEYS.map((key) => {
@@ -649,14 +679,14 @@ export default function HabitTracker() {
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, x: 10 }}
-                          className="flex items-center gap-1 sm:gap-2 bg-white/50 rounded-2xl px-2 py-2 group"
+                          className="flex items-center gap-1 sm:gap-2 bg-white/50 dark:bg-stone-700/40 rounded-2xl px-2 py-2 group"
                         >
                           <div className={`${LABEL_WIDTH} shrink-0 flex items-center gap-2 min-w-0 pr-1`}>
                             <div className={`w-8 h-8 rounded-xl ${color.light} flex items-center justify-center shrink-0`}>
                               <Icon className={`w-4 h-4 ${color.text}`} />
                             </div>
                             <div className="min-w-0">
-                              <p className="text-sm font-medium text-stone-700 truncate">{habit.name}</p>
+                              <p className="text-sm font-medium text-stone-700 dark:text-stone-100 truncate">{habit.name}</p>
                               {streak > 0 && (
                                 <p className="text-[10px] text-orange-500 flex items-center gap-0.5">
                                   <Flame className="w-3 h-3" /> {streak} day{streak > 1 ? 's' : ''}
@@ -685,7 +715,7 @@ export default function HabitTracker() {
                                       ? 'border-stone-100 bg-stone-50/50 cursor-not-allowed opacity-50'
                                       : checked
                                       ? `${color.solid} border-transparent`
-                                      : 'border-stone-200 bg-white hover:border-stone-300 cursor-pointer'
+                                      : 'border-stone-200 dark:border-stone-600 bg-white dark:bg-stone-800 hover:border-stone-300 cursor-pointer'
                                   }`}
                                 >
                                   <AnimatePresence>
@@ -743,13 +773,13 @@ export default function HabitTracker() {
                         const count = habitMonthlyCount(habit.id);
                         const habitPct = monthTotalDays === 0 ? 0 : Math.round((count / monthTotalDays) * 100);
                         return (
-                          <div key={habit.id} className="flex items-center gap-1 bg-white/50 rounded-2xl px-2 py-2">
+                          <div key={habit.id} className="flex items-center gap-1 bg-white/50 dark:bg-stone-700/40 rounded-2xl px-2 py-2">
                             <div className={`${LABEL_WIDTH} shrink-0 flex items-center gap-2 min-w-0 pr-1`}>
                               <div className={`w-8 h-8 rounded-xl ${color.light} flex items-center justify-center shrink-0`}>
                                 <Icon className={`w-4 h-4 ${color.text}`} />
                               </div>
                               <div className="min-w-0">
-                                <p className="text-sm font-medium text-stone-700 truncate">{habit.name}</p>
+                                <p className="text-sm font-medium text-stone-700 dark:text-stone-100 truncate">{habit.name}</p>
                                 <p className="text-[10px] text-stone-400">{count}/{monthTotalDays} · {habitPct}%</p>
                               </div>
                             </div>
@@ -767,7 +797,7 @@ export default function HabitTracker() {
                                       ? 'bg-stone-50/50 cursor-not-allowed opacity-40'
                                       : checked
                                       ? `${color.solid}`
-                                      : 'bg-white border border-stone-200 hover:border-stone-300 cursor-pointer'
+                                      : 'bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white hover:border-stone-300 cursor-pointer'
                                   }`}
                                 >
                                   {checked && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
@@ -787,14 +817,14 @@ export default function HabitTracker() {
                 {habits.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-stone-200/60 text-xs">
                     <span className="bg-white/60 px-3 py-1.5 rounded-full text-stone-600">
-                      <strong className="text-stone-800">{monthlyCompleted}</strong> total check-ins this month
+                      <strong className="text-stone-800 dark:text-white">{monthlyCompleted}</strong> total check-ins this month
                     </span>
                     <span className="bg-white/60 px-3 py-1.5 rounded-full text-stone-600">
-                      Monthly completion: <strong className="text-stone-800">{monthlyRate}%</strong>
+                      Monthly completion: <strong className="text-stone-800 dark:text-white">{monthlyRate}%</strong>
                     </span>
                     {bestHabit && (
                       <span className="bg-white/60 px-3 py-1.5 rounded-full text-stone-600">
-                        Best habit: <strong className="text-stone-800">{bestHabit.habit.name}</strong> ({bestHabit.count}/{monthTotalDays})
+                        Best habit: <strong className="text-stone-800 dark:text-white">{bestHabit.habit.name}</strong> ({bestHabit.count}/{monthTotalDays})
                       </span>
                     )}
                   </div>
