@@ -247,32 +247,38 @@ function CheckinCell({ status, note, color, isFuture, size = 'lg', shape = 'circ
   );
 }
 
-function PrintView({ habits, checkins, year, month }) {
+function PrintView({ habits, year, month }) {
   const dates = getMonthDates(year, month);
   const monthName = new Date(year, month, 1).toLocaleString('default', { month: 'long' });
   return (
     <div className="hidden print:block p-4 text-black">
-      <style>{`@media print { @page { size: A4 landscape; margin: 10mm; } }`}</style>
-      <h1 className="text-lg font-bold mb-1">Habit Tracker — {monthName} {year}</h1>
-      <p className="text-xs mb-3">✓ = Done · – = Skipped · blank = missed</p>
-      <table className="w-full border-collapse text-[9px]">
+      <style>{`@media print { @page { size: A4 portrait; margin: 10mm; } }`}</style>
+      <h1 className="text-xl font-bold mb-4">Habit Tracker — {monthName} {year}</h1>
+      <table className="w-full border-collapse text-[10px]">
         <thead>
           <tr>
-            <th className="border border-black px-1 py-0.5 text-left">Habit</th>
+            <th className="border border-black px-2 py-1.5 text-left w-32">Habit</th>
             {dates.map((d) => (
-              <th key={d.getDate()} className="border border-black px-0.5 py-0.5 w-5">{d.getDate()}</th>
+              <th key={d.getDate()} className="border border-black px-0.5 py-1.5 w-4">{d.getDate()}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {habits.map((h) => (
             <tr key={h.id}>
-              <td className="border border-black px-1 py-0.5 font-medium whitespace-nowrap">{h.name}</td>
-              {dates.map((d) => {
-                const entry = getEntry(checkins, dateKey(d), h.id);
-                const mark = entry.status === 'checked' ? '✓' : entry.status === 'skipped' ? '–' : '';
-                return <td key={dateKey(d)} className="border border-black text-center">{mark}</td>;
-              })}
+              <td className="border border-black px-2 py-1.5 font-medium whitespace-nowrap">{h.name}</td>
+              {dates.map((d) => (
+                <td key={dateKey(d)} className="border border-black text-center h-6"></td>
+              ))}
+            </tr>
+          ))}
+          {/* Kuch extra khali lines taake aap haath se naye habits likh sakein */}
+          {Array.from({ length: 4 }).map((_, i) => (
+            <tr key={`empty-${i}`}>
+              <td className="border border-black px-2 py-1.5 h-6"></td>
+              {dates.map((d) => (
+                <td key={`empty-${i}-${d.getDate()}`} className="border border-black text-center h-6"></td>
+              ))}
             </tr>
           ))}
         </tbody>
@@ -299,6 +305,17 @@ export default function HabitTracker() {
   const [pHeight, setPHeight] = useState('');
   const [viewMode, setViewMode] = useState('weekly');
   const [user, setUser] = useState(null);
+
+  const [showPrintModal, setShowPrintModal] = useState(false);
+  const [selectedPrintMonth, setSelectedPrintMonth] = useState(() => new Date().getMonth());
+  const [printMonth, setPrintMonth] = useState(() => new Date().getMonth());
+  const [printYear, setPrintYear] = useState(() => new Date().getFullYear());
+
+  const handleGeneratePrint = () => {
+    setPrintMonth(selectedPrintMonth);
+    setShowPrintModal(false);
+    setTimeout(() => window.print(), 150);
+  };
 
   const [theme, setTheme] = useState(() => {
 
@@ -363,7 +380,7 @@ export default function HabitTracker() {
     return streak;
   };
 
-const currentStreak = useMemo(() => {
+  const currentStreak = useMemo(() => {
 
     if (!habits || habits.length === 0) return 0;
     return habits.reduce((max, h) => Math.max(max, getStreak(h.id)), 0);
@@ -372,7 +389,7 @@ const currentStreak = useMemo(() => {
   const habitMonthlyCount = (habitId) => {
     let count = 0;
     monthDates.forEach((d) => {
-      if (d > today) return; 
+      if (d > today) return;
       const k = dateKey(d);
       if (getEntry(checkins, k, habitId).status === 'checked') count++;
     });
@@ -417,7 +434,7 @@ const currentStreak = useMemo(() => {
   }, [habits, checkins, monthDates]);
 
 
-  
+
   const habitsByCategory = useMemo(() => {
     const groups = {};
     CATEGORIES.forEach((c) => (groups[c] = []));
@@ -579,8 +596,8 @@ const currentStreak = useMemo(() => {
             >
               {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
             </button>
-            
-            <button onClick={() => window.print()} className="flex items-center gap-1.5 text-sm font-medium text-stone-700 dark:text-stone-300 bg-white/60 dark:bg-stone-800/60 px-3 py-1.5 rounded-full border border-white/60 dark:border-stone-700/60 shadow-sm hover:shadow-md transition-all">
+
+            <button onClick={() => setShowPrintModal(true)} className="flex items-center gap-1.5 text-sm font-medium text-stone-700 dark:text-stone-300 bg-white/60 dark:bg-stone-800/60 px-3 py-1.5 rounded-full border border-white/60 dark:border-stone-700/60 shadow-sm hover:shadow-md transition-all">
               <Printer className="w-4 h-4" /> Print
             </button>
             <button onClick={() => exportToCSV(habits, checkins)} className="flex items-center gap-1.5 text-sm font-medium text-stone-700 dark:text-stone-300 bg-white/60 dark:bg-stone-800/60 px-3 py-1.5 rounded-full border border-white/60 dark:border-stone-700/60 shadow-sm hover:shadow-md transition-all">
@@ -661,7 +678,65 @@ const currentStreak = useMemo(() => {
                 exit={{ opacity: 0 }}
                 className="fixed inset-0 z-50 bg-stone-900/30 backdrop-blur-sm flex items-center justify-center p-4"
                 onClick={() => setShowProfileForm(false)}
+
+
               >
+
+                {/* 👇 PRINT POPUP (DROPDOWN WALA) 👇 */}
+                <AnimatePresence>
+                  {showPrintModal && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="fixed inset-0 z-50 bg-stone-900/30 backdrop-blur-sm flex items-center justify-center p-4 print:hidden"
+                      onClick={() => setShowPrintModal(false)}
+                    >
+                      <motion.div
+                        initial={{ scale: 0.95, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.95, opacity: 0 }}
+                        onClick={(e) => e.stopPropagation()}
+                        className="bg-white/90 dark:bg-stone-800/90 backdrop-blur-xl border border-white/70 dark:border-stone-600 rounded-3xl shadow-2xl p-6 w-full max-w-xs"
+                      >
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="font-semibold text-stone-800 dark:text-white flex items-center gap-2">
+                            <Printer className="w-5 h-5" /> Print Settings
+                          </h3>
+                          <button onClick={() => setShowPrintModal(false)} className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-300">
+                            <X className="w-5 h-5" />
+                          </button>
+                        </div>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-xs font-medium text-stone-500 mb-1">Select Month</label>
+                            <select
+                              value={selectedPrintMonth}
+                              onChange={(e) => setSelectedPrintMonth(parseInt(e.target.value))}
+                              className="w-full px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300 cursor-pointer"
+                            >
+                              {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map((m, i) => (
+                                <option key={m} value={i}>{m}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                        <div className="flex justify-end gap-2 pt-5">
+                          <button onClick={() => setShowPrintModal(false)} className="text-sm text-stone-500 dark:text-stone-400 px-3 py-1.5 hover:bg-stone-100 dark:hover:bg-stone-700 rounded-full transition-colors">
+                            Cancel
+                          </button>
+                          <button
+                            onClick={handleGeneratePrint}
+                            className="text-sm font-medium text-white bg-teal-500 px-4 py-1.5 rounded-full shadow hover:shadow-md transition-shadow"
+                          >
+                            Generate Print
+                          </button>
+                        </div>
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 <motion.div
                   initial={{ scale: 0.95, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
