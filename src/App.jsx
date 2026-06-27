@@ -250,37 +250,70 @@ function CheckinCell({ status, note, color, isFuture, size = 'lg', shape = 'circ
 function PrintView({ habits, year, month }) {
   const dates = getMonthDates(year, month);
   const monthName = new Date(year, month, 1).toLocaleString('default', { month: 'long' });
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  // Agar habits kam hain, toh hum blank columns add kar denge taake page poora bhara hua aur acha lage
+  const MIN_COLUMNS = 7; 
+  const blankColumnsCount = Math.max(0, MIN_COLUMNS - habits.length);
+  const blankColumns = Array.from({ length: blankColumnsCount });
+
   return (
-    <div className="hidden print:block p-4 text-black">
-      <style>{`@media print { @page { size: A4 portrait; margin: 10mm; } }`}</style>
-      <h1 className="text-xl font-bold mb-4">Habit Tracker — {monthName} {year}</h1>
-      <table className="w-full border-collapse text-[10px]">
+    <div className="hidden print:block p-8 text-black bg-white">
+      <style>{`
+        @media print { 
+          @page { size: A4 portrait; margin: 15mm; }
+          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+      `}</style>
+      
+      <div className="mb-6 flex items-baseline justify-between border-b-2 border-black pb-2">
+        <h1 className="text-3xl font-extrabold tracking-tight uppercase">Habit Tracker</h1>
+        <h2 className="text-xl font-bold text-gray-700">{monthName} {year}</h2>
+      </div>
+
+      <table className="w-full border-collapse">
         <thead>
           <tr>
-            <th className="border border-black px-2 py-1.5 text-left w-32">Habit</th>
-            {dates.map((d) => (
-              <th key={d.getDate()} className="border border-black px-0.5 py-1.5 w-4">{d.getDate()}</th>
+            <th className="border-2 border-gray-400 bg-gray-100 px-3 py-3 text-center font-bold text-sm w-16">
+              Date
+            </th>
+            {/* Habits Header */}
+            {habits.map((h) => (
+              <th key={h.id} className="border-2 border-gray-400 bg-gray-100 px-2 py-3 text-center font-bold text-sm leading-tight">
+                {h.name}
+              </th>
+            ))}
+            {/* Extra Blank Headers */}
+            {blankColumns.map((_, i) => (
+              <th key={`blank-head-${i}`} className="border-2 border-gray-400 bg-gray-100 px-2 py-3 text-center text-gray-400 font-medium text-xs">
+                (New Habit)
+              </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {habits.map((h) => (
-            <tr key={h.id}>
-              <td className="border border-black px-2 py-1.5 font-medium whitespace-nowrap">{h.name}</td>
-              {dates.map((d) => (
-                <td key={dateKey(d)} className="border border-black text-center h-6"></td>
-              ))}
-            </tr>
-          ))}
-          {/* Kuch extra khali lines taake aap haath se naye habits likh sakein */}
-          {Array.from({ length: 4 }).map((_, i) => (
-            <tr key={`empty-${i}`}>
-              <td className="border border-black px-2 py-1.5 h-6"></td>
-              {dates.map((d) => (
-                <td key={`empty-${i}-${d.getDate()}`} className="border border-black text-center h-6"></td>
-              ))}
-            </tr>
-          ))}
+          {dates.map((d) => {
+            const isWeekend = d.getDay() === 0 || d.getDay() === 6; // Sunday or Saturday
+            return (
+              <tr key={d.getDate()} className={isWeekend ? "bg-gray-50" : ""}>
+                {/* Date Column (Length / Rows) */}
+                <td className="border-2 border-gray-400 px-2 py-2.5 text-center whitespace-nowrap">
+                  <span className="font-bold text-base">{pad(d.getDate())}</span>
+                  <span className="text-gray-500 text-xs ml-1.5 uppercase">{dayNames[d.getDay()]}</span>
+                </td>
+                
+                {/* Empty Boxes for Habits (Width / Columns) */}
+                {habits.map((h) => (
+                  <td key={h.id} className="border-2 border-gray-400 text-center h-10"></td>
+                ))}
+                
+                {/* Extra Blank Boxes */}
+                {blankColumns.map((_, i) => (
+                  <td key={`blank-body-${i}-${d.getDate()}`} className="border-2 border-gray-400 text-center h-10"></td>
+                ))}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
