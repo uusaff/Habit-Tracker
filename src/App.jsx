@@ -728,10 +728,10 @@ export default function HabitTracker() {
                             <div className={`w-8 h-8 rounded-xl ${color.light} flex items-center justify-center shrink-0`}>
                               <Icon className={`w-4 h-4 ${color.text}`} />
                             </div>
-                            <div className="min-w-0">
-                              <p className="text-sm font-medium text-stone-700 dark:text-stone-100 truncate">{habit.name}</p>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-medium text-stone-700 dark:text-stone-100 whitespace-normal break-words leading-tight">{habit.name}</p>
                               {streak > 0 && (
-                                <p className="text-[10px] text-orange-500 flex items-center gap-0.5">
+                                <p className="text-[10px] text-orange-500 flex items-center gap-0.5 mt-0.5">
                                   <Flame className="w-3 h-3" /> {streak} day{streak > 1 ? 's' : ''}
                                 </p>
                               )}
@@ -762,10 +762,10 @@ export default function HabitTracker() {
                                   whileTap={!isFuture ? { scale: 0.85 } : {}}
                                   onClick={() => !isFuture && toggleCheckin(habit.id, k)}
                                   className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border-2 transition-colors ${isFuture
-                                      ? 'border-stone-100 bg-stone-50/50 cursor-not-allowed opacity-50'
-                                      : checked
-                                        ? `${color.solid} border-transparent`
-                                        : 'border-stone-200 dark:border-stone-600 bg-white dark:bg-stone-800 hover:border-stone-300 cursor-pointer'
+                                    ? 'border-stone-100 bg-stone-50/50 cursor-not-allowed opacity-50'
+                                    : checked
+                                      ? `${color.solid} border-transparent`
+                                      : 'border-stone-200 dark:border-stone-600 bg-white dark:bg-stone-800 hover:border-stone-300 cursor-pointer'
                                     }`}
                                 >
                                   <AnimatePresence>
@@ -842,10 +842,10 @@ export default function HabitTracker() {
                                   disabled={isFuture}
                                   onClick={() => !isFuture && toggleCheckin(habit.id, k)}
                                   className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 transition-colors ${isFuture
-                                      ? 'bg-stone-50/50 cursor-not-allowed opacity-40'
-                                      : checked
-                                        ? `${color.solid}`
-                                        : 'bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white hover:border-stone-300 cursor-pointer'
+                                    ? 'bg-stone-50/50 cursor-not-allowed opacity-40'
+                                    : checked
+                                      ? `${color.solid}`
+                                      : 'bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white hover:border-stone-300 cursor-pointer'
                                     }`}
                                 >
                                   {checked && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
