@@ -252,41 +252,55 @@ function PrintView({ habits, year, month }) {
   const monthName = new Date(year, month, 1).toLocaleString('default', { month: 'long' });
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-  // Agar habits kam hain, toh hum blank columns add kar denge taake page poora bhara hua aur acha lage
-  const MIN_COLUMNS = 7; 
+  // Agar habits kam hain, toh hum blank columns add kar denge taake page poora width le laye
+  const MIN_COLUMNS = 7;
   const blankColumnsCount = Math.max(0, MIN_COLUMNS - habits.length);
   const blankColumns = Array.from({ length: blankColumnsCount });
 
   return (
-    <div className="hidden print:block p-8 text-black bg-white">
+    <div className="hidden print:block text-black bg-white" style={{ margin: 0, padding: 0 }}>
+      {/* Print ke liye khaas CSS jisme humne layout ko zayada spread kiya hai */}
       <style>{`
         @media print { 
-          @page { size: A4 portrait; margin: 15mm; }
-          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          @page { size: A4 portrait; margin: 10mm; }
+          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; margin: 0; padding: 0;}
+          /* Table ko poori screen pe force karne ke liye fixed layout */
+          table { table-layout: fixed; width: 100%; }
+          th { word-wrap: break-word; overflow-wrap: break-word; }
         }
       `}</style>
-      
-      <div className="mb-6 flex items-baseline justify-between border-b-2 border-black pb-2">
-        <h1 className="text-3xl font-extrabold tracking-tight uppercase">Habit Tracker</h1>
-        <h2 className="text-xl font-bold text-gray-700">{monthName} {year}</h2>
+
+      {/* 👑 CUSTOM HEADER 👑 */}
+      <div className="flex justify-between items-end mb-4 border-b-2 border-black pb-2">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight uppercase">Habit Tracker</h1>
+          <h2 className="text-lg font-bold text-gray-700">{monthName} {year}</h2>
+        </div>
+        <div className="text-right">
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-0.5">A personal project by</p>
+          <p className="text-sm font-bold text-black uppercase">M Yousaf</p>
+          <p className="text-[10px] text-gray-500 font-mono mt-0.5">github.com/uusaff</p>
+        </div>
       </div>
 
       <table className="w-full border-collapse">
         <thead>
           <tr>
-            <th className="border-2 border-gray-400 bg-gray-100 px-3 py-3 text-center font-bold text-sm w-16">
+            <th className="border-[1.5px] border-gray-500 bg-gray-100 px-1 py-2 text-center font-bold text-[10px] w-12">
               Date
             </th>
             {/* Habits Header */}
             {habits.map((h) => (
-              <th key={h.id} className="border-2 border-gray-400 bg-gray-100 px-2 py-3 text-center font-bold text-sm leading-tight">
-                {h.name}
+              <th key={h.id} className="border-[1.5px] border-gray-500 bg-gray-100 px-1 py-1 text-center font-bold text-[9px] leading-tight align-bottom pb-2">
+                <span className="block -rotate-90 origin-bottom whitespace-nowrap mb-6 h-20 text-left overflow-hidden">
+                  {h.name}
+                </span>
               </th>
             ))}
             {/* Extra Blank Headers */}
             {blankColumns.map((_, i) => (
-              <th key={`blank-head-${i}`} className="border-2 border-gray-400 bg-gray-100 px-2 py-3 text-center text-gray-400 font-medium text-xs">
-                (New Habit)
+              <th key={`blank-head-${i}`} className="border-[1.5px] border-gray-500 bg-gray-100 px-1 py-2 text-center text-gray-400 font-medium text-[9px]">
+
               </th>
             ))}
           </tr>
@@ -296,26 +310,32 @@ function PrintView({ habits, year, month }) {
             const isWeekend = d.getDay() === 0 || d.getDay() === 6; // Sunday or Saturday
             return (
               <tr key={d.getDate()} className={isWeekend ? "bg-gray-50" : ""}>
-                {/* Date Column (Length / Rows) */}
-                <td className="border-2 border-gray-400 px-2 py-2.5 text-center whitespace-nowrap">
-                  <span className="font-bold text-base">{pad(d.getDate())}</span>
-                  <span className="text-gray-500 text-xs ml-1.5 uppercase">{dayNames[d.getDay()]}</span>
+                {/* Date Column */}
+                <td className="border-[1.5px] border-gray-500 px-1 py-1 text-center whitespace-nowrap">
+                  <span className="font-bold text-[11px]">{pad(d.getDate())}</span>
+                  <span className="text-gray-500 text-[9px] ml-1 uppercase">{dayNames[d.getDay()]}</span>
                 </td>
-                
-                {/* Empty Boxes for Habits (Width / Columns) */}
+
+                {/* Empty Boxes for Habits */}
                 {habits.map((h) => (
-                  <td key={h.id} className="border-2 border-gray-400 text-center h-10"></td>
+                  <td key={h.id} className="border-[1.5px] border-gray-500 text-center h-6"></td>
                 ))}
-                
+
                 {/* Extra Blank Boxes */}
                 {blankColumns.map((_, i) => (
-                  <td key={`blank-body-${i}-${d.getDate()}`} className="border-2 border-gray-400 text-center h-10"></td>
+                  <td key={`blank-body-${i}-${d.getDate()}`} className="border-[1.5px] border-gray-500 text-center h-6"></td>
                 ))}
               </tr>
             );
           })}
         </tbody>
       </table>
+
+      {/* 👑 COPYRIGHT FOOTER 👑 */}
+      <div className="mt-4 pt-2 border-t border-gray-300 flex justify-between items-center text-[9px] text-gray-500">
+        <p>© {new Date().getFullYear()} M Yousaf. All Rights Reserved.</p>
+        <p>® Trademark Registered</p>
+      </div>
     </div>
   );
 }
@@ -615,621 +635,670 @@ export default function HabitTracker() {
   const LABEL_WIDTH = 'w-32 sm:w-44';
 
 
-  // 👇 YAHAN SE RETURN SHURU HO RAHA HAI (Yeh missing tha) 👇
+
   return (
     <>
       <div className="print:hidden min-h-screen relative overflow-hidden bg-gradient-to-br from-cyan-50 via-teal-50 to-amber-50 dark:from-stone-900 dark:via-stone-800 dark:to-teal-950 dark:text-stone-200 transition-colors duration-500 font-sans">
-        <header className="relative z-20 w-full bg-white/40 dark:bg-stone-900/40 backdrop-blur-xl border-b border-white/60 dark:border-stone-700/60 shadow-sm px-4 sm:px-6 py-3 flex justify-between items-center transition-colors">
-          <span className="font-bold text-stone-700 dark:text-stone-200 tracking-wide text-sm sm:text-base">Habit Tracker</span>
+        <div className="flex items-center gap-3">
+          <img
+            src="https://res.cloudinary.com/dy1wk6svu/image/upload/f_auto,q_auto/bg_hou2cp"
+            alt="Logo"
+            className="w-9 h-9 rounded-full border-2 border-white dark:border-stone-700 shadow-sm object-cover"
+          />
+          <span className="font-bold text-stone-700 dark:text-stone-200 tracking-wide text-sm sm:text-base">
+            USAF's Habit Tracker
+          </span>
+        </div>
 
-          <div className="flex items-center gap-3">
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-full bg-white/60 dark:bg-stone-800/60 border border-white/60 dark:border-stone-700/60 shadow-sm hover:shadow-md text-stone-700 dark:text-stone-300 transition-all"
-            >
-              {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-            </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-full bg-white/60 dark:bg-stone-800/60 border border-white/60 dark:border-stone-700/60 shadow-sm hover:shadow-md text-stone-700 dark:text-stone-300 transition-all"
+          >
+            {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+          </button>
 
-            <button onClick={() => setShowPrintModal(true)} className="flex items-center gap-1.5 text-sm font-medium text-stone-700 dark:text-stone-300 bg-white/60 dark:bg-stone-800/60 px-3 py-1.5 rounded-full border border-white/60 dark:border-stone-700/60 shadow-sm hover:shadow-md transition-all">
-              <Printer className="w-4 h-4" /> Print
-            </button>
-            <button onClick={() => exportToCSV(habits, checkins)} className="flex items-center gap-1.5 text-sm font-medium text-stone-700 dark:text-stone-300 bg-white/60 dark:bg-stone-800/60 px-3 py-1.5 rounded-full border border-white/60 dark:border-stone-700/60 shadow-sm hover:shadow-md transition-all">
-              <Download className="w-4 h-4" /> CSV
-            </button>
+          <button onClick={() => setShowPrintModal(true)} className="flex items-center gap-1.5 text-sm font-medium text-stone-700 dark:text-stone-300 bg-white/60 dark:bg-stone-800/60 px-3 py-1.5 rounded-full border border-white/60 dark:border-stone-700/60 shadow-sm hover:shadow-md transition-all">
+            <Printer className="w-4 h-4" /> Print
+          </button>
+          <button onClick={() => exportToCSV(habits, checkins)} className="flex items-center gap-1.5 text-sm font-medium text-stone-700 dark:text-stone-300 bg-white/60 dark:bg-stone-800/60 px-3 py-1.5 rounded-full border border-white/60 dark:border-stone-700/60 shadow-sm hover:shadow-md transition-all">
+            <Download className="w-4 h-4" /> CSV
+          </button>
 
-            <a
-              href="https://github.com/uusaff"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-sm font-medium text-stone-700 dark:text-stone-100 dark:text-stone-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors bg-white/60 dark:bg-stone-800/60 px-4 py-1.5 rounded-full border border-white/60 dark:border-stone-700/60 shadow-sm hover:shadow-md"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-                <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.2c3-.3 6-1.5 6-6.5a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 5 3 6.2 6 6.5a4.8 4.8 0 0 0-1 3.2v4"></path>
-                <path d="M9 18c-4.5 1.6-5-2.5-5-3"></path>
-              </svg>
-              uusaff
-            </a>
+          <a
+            href="https://github.com/uusaff"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-sm font-medium text-stone-700 dark:text-stone-100 dark:text-stone-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors bg-white/60 dark:bg-stone-800/60 px-4 py-1.5 rounded-full border border-white/60 dark:border-stone-700/60 shadow-sm hover:shadow-md"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+              <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.2c3-.3 6-1.5 6-6.5a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 5 3 6.2 6 6.5a4.8 4.8 0 0 0-1 3.2v4"></path>
+              <path d="M9 18c-4.5 1.6-5-2.5-5-3"></path>
+            </svg>
+            uusaff
+          </a>
+        </div>
+      </header>
+
+      <header className="relative z-20 w-full bg-white/40 dark:bg-stone-900/40 backdrop-blur-xl border-b border-white/60 dark:border-stone-700/60 shadow-sm px-4 sm:px-6 py-3 flex justify-between items-center transition-colors">
+        <span className="font-bold text-stone-700 dark:text-stone-200 tracking-wide text-sm sm:text-base">USAF's Habit Tracker</span>
+
+        <div className="flex items-center gap-3">
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-full bg-white/60 dark:bg-stone-800/60 border border-white/60 dark:border-stone-700/60 shadow-sm hover:shadow-md text-stone-700 dark:text-stone-300 transition-all"
+          >
+            {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+          </button>
+
+          <button onClick={() => setShowPrintModal(true)} className="flex items-center gap-1.5 text-sm font-medium text-stone-700 dark:text-stone-300 bg-white/60 dark:bg-stone-800/60 px-3 py-1.5 rounded-full border border-white/60 dark:border-stone-700/60 shadow-sm hover:shadow-md transition-all">
+            <Printer className="w-4 h-4" /> Print
+          </button>
+          <button onClick={() => exportToCSV(habits, checkins)} className="flex items-center gap-1.5 text-sm font-medium text-stone-700 dark:text-stone-300 bg-white/60 dark:bg-stone-800/60 px-3 py-1.5 rounded-full border border-white/60 dark:border-stone-700/60 shadow-sm hover:shadow-md transition-all">
+            <Download className="w-4 h-4" /> CSV
+          </button>
+
+          <a
+            href="https://github.com/uusaff"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-sm font-medium text-stone-700 dark:text-stone-100 dark:text-stone-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors bg-white/60 dark:bg-stone-800/60 px-4 py-1.5 rounded-full border border-white/60 dark:border-stone-700/60 shadow-sm hover:shadow-md"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+              <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.2c3-.3 6-1.5 6-6.5a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 5 3 6.2 6 6.5a4.8 4.8 0 0 0-1 3.2v4"></path>
+              <path d="M9 18c-4.5 1.6-5-2.5-5-3"></path>
+            </svg>
+            uusaff
+          </a>
+        </div>
+      </header>
+
+      <div className="absolute top-0 -left-24 w-72 h-72 bg-teal-300/40 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/3 -right-24 w-80 h-80 bg-orange-300/40 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-1/4 w-72 h-72 bg-emerald-300/30 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-10 right-1/3 w-64 h-64 bg-sky-300/30 rounded-full blur-3xl pointer-events-none" />
+      <Leaf className="absolute -top-8 -left-8 w-40 h-40 text-emerald-700/[0.07] rotate-[20deg] pointer-events-none" />
+      <Leaf className="absolute bottom-16 -right-10 w-52 h-52 text-emerald-700/[0.07] -rotate-[35deg] pointer-events-none" />
+      <Leaf className="absolute top-1/2 left-[8%] w-20 h-20 text-teal-700/[0.06] rotate-[150deg] pointer-events-none hidden sm:block" />
+      <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-amber-200/40 to-transparent pointer-events-none" />
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: 'easeOut' }}
+        className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10"
+      >
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-teal-400 to-emerald-400 flex items-center justify-center text-xl shadow-lg shadow-teal-200/60">
+            🌴
           </div>
-        </header>
-
-        <div className="absolute top-0 -left-24 w-72 h-72 bg-teal-300/40 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-1/3 -right-24 w-80 h-80 bg-orange-300/40 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-1/4 w-72 h-72 bg-emerald-300/30 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-10 right-1/3 w-64 h-64 bg-sky-300/30 rounded-full blur-3xl pointer-events-none" />
-        <Leaf className="absolute -top-8 -left-8 w-40 h-40 text-emerald-700/[0.07] rotate-[20deg] pointer-events-none" />
-        <Leaf className="absolute bottom-16 -right-10 w-52 h-52 text-emerald-700/[0.07] -rotate-[35deg] pointer-events-none" />
-        <Leaf className="absolute top-1/2 left-[8%] w-20 h-20 text-teal-700/[0.06] rotate-[150deg] pointer-events-none hidden sm:block" />
-        <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-amber-200/40 to-transparent pointer-events-none" />
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-stone-800 dark:text-white tracking-tight">Daily Progress</h1>
+            <p className="text-stone-500 text-sm">Stay consistent, stay tropical.</p>
+          </div>
+        </div>
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10"
+          transition={{ duration: 0.5 }}
+          className="bg-white/40 dark:bg-stone-800/40 backdrop-blur-xl border border-white/60 dark:border-stone-700/60 rounded-3xl shadow-lg shadow-emerald-100/50 dark:shadow-black/40 p-5 sm:p-6 mb-6 flex flex-wrap items-center gap-4"
         >
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-teal-400 to-emerald-400 flex items-center justify-center text-xl shadow-lg shadow-teal-200/60">
-              🌴
-            </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-stone-800 dark:text-white tracking-tight">Daily Progress</h1>
-              <p className="text-stone-500 text-sm">Stay consistent, stay tropical.</p>
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-xl font-bold shrink-0 shadow-md">
+            {profile.name ? profile.name.trim()[0].toUpperCase() : <User className="w-6 h-6" />}
+          </div>
+          <div className="flex-1 min-w-[140px]">
+            <p className="font-semibold text-stone-800 dark:text-white">{profile.name || 'Add your name'}</p>
+            <div className="flex flex-wrap gap-3 text-xs text-stone-500 mt-1">
+              {profile.age && <span>{profile.age} yrs</span>}
+              {profile.weight && <span>{profile.weight} kg</span>}
+              {profile.height && <span>{profile.height} cm</span>}
+              {!profile.age && !profile.weight && !profile.height && <span>Tap edit to set up your profile</span>}
             </div>
           </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="bg-white/40 dark:bg-stone-800/40 backdrop-blur-xl border border-white/60 dark:border-stone-700/60 rounded-3xl shadow-lg shadow-emerald-100/50 dark:shadow-black/40 p-5 sm:p-6 mb-6 flex flex-wrap items-center gap-4"
+          <button
+            onClick={openProfileForm}
+            className="flex items-center gap-1 text-sm font-medium text-teal-700 bg-white/70 px-3 py-1.5 rounded-full border border-white/70 shadow-sm hover:shadow-md transition-shadow shrink-0"
           >
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-xl font-bold shrink-0 shadow-md">
-              {profile.name ? profile.name.trim()[0].toUpperCase() : <User className="w-6 h-6" />}
-            </div>
-            <div className="flex-1 min-w-[140px]">
-              <p className="font-semibold text-stone-800 dark:text-white">{profile.name || 'Add your name'}</p>
-              <div className="flex flex-wrap gap-3 text-xs text-stone-500 mt-1">
-                {profile.age && <span>{profile.age} yrs</span>}
-                {profile.weight && <span>{profile.weight} kg</span>}
-                {profile.height && <span>{profile.height} cm</span>}
-                {!profile.age && !profile.weight && !profile.height && <span>Tap edit to set up your profile</span>}
-              </div>
-            </div>
-            <button
-              onClick={openProfileForm}
-              className="flex items-center gap-1 text-sm font-medium text-teal-700 bg-white/70 px-3 py-1.5 rounded-full border border-white/70 shadow-sm hover:shadow-md transition-shadow shrink-0"
+            <Edit3 className="w-3.5 h-3.5" /> Edit
+          </button>
+        </motion.div>
+
+        <AnimatePresence>
+          {showProfileForm && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-stone-900/30 backdrop-blur-sm flex items-center justify-center p-4"
+              onClick={() => setShowProfileForm(false)}
             >
-              <Edit3 className="w-3.5 h-3.5" /> Edit
-            </button>
-          </motion.div>
-
-          <AnimatePresence>
-            {showProfileForm && (
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-50 bg-stone-900/30 backdrop-blur-sm flex items-center justify-center p-4"
-                onClick={() => setShowProfileForm(false)}
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white/90 backdrop-blur-xl border border-white/70 rounded-3xl shadow-2xl p-6 w-full max-w-sm"
               >
-                <motion.div
-                  initial={{ scale: 0.95, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.95, opacity: 0 }}
-                  onClick={(e) => e.stopPropagation()}
-                  className="bg-white/90 backdrop-blur-xl border border-white/70 rounded-3xl shadow-2xl p-6 w-full max-w-sm"
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold text-stone-800 dark:text-white">Your Profile</h3>
-                    <button onClick={() => setShowProfileForm(false)} className="text-stone-400 hover:text-stone-600">
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-                  <div className="space-y-3">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-stone-800 dark:text-white">Your Profile</h3>
+                  <button onClick={() => setShowProfileForm(false)} className="text-stone-400 hover:text-stone-600">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  <input
+                    value={pName}
+                    onChange={(e) => setPName(e.target.value)}
+                    placeholder="Name"
+                    className="w-full px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
+                  />
+                  <div className="grid grid-cols-3 gap-2">
                     <input
-                      value={pName}
-                      onChange={(e) => setPName(e.target.value)}
-                      placeholder="Name"
-                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
+                      value={pAge}
+                      onChange={(e) => setPAge(e.target.value)}
+                      type="number"
+                      placeholder="Age"
+                      className="px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
                     />
-                    <div className="grid grid-cols-3 gap-2">
-                      <input
-                        value={pAge}
-                        onChange={(e) => setPAge(e.target.value)}
-                        type="number"
-                        placeholder="Age"
-                        className="px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
-                      />
-                      <input
-                        value={pWeight}
-                        onChange={(e) => setPWeight(e.target.value)}
-                        type="number"
-                        placeholder="Weight kg"
-                        className="px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
-                      />
-                      <input
-                        value={pHeight}
-                        onChange={(e) => setPHeight(e.target.value)}
-                        type="number"
-                        placeholder="Height cm"
-                        className="px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex justify-end gap-2 pt-4">
-                    <button onClick={() => setShowProfileForm(false)} className="text-sm text-stone-500 px-3 py-1.5">
-                      Cancel
-                    </button>
-                    <button onClick={saveProfile} className="text-sm font-medium text-white bg-teal-500 px-4 py-1.5 rounded-full">
-                      Save
-                    </button>
-                  </div>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-
-          {/* 👇 PROFILE WALA MODAL 👇 */}
-          <AnimatePresence>
-            {showProfileForm && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-50 bg-stone-900/30 backdrop-blur-sm flex items-center justify-center p-4"
-                onClick={() => setShowProfileForm(false)}
-              >
-                <motion.div
-                  initial={{ scale: 0.95, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.95, opacity: 0 }}
-                  onClick={(e) => e.stopPropagation()}
-                  className="bg-white/90 backdrop-blur-xl border border-white/70 rounded-3xl shadow-2xl p-6 w-full max-w-sm"
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold text-stone-800 dark:text-white">Your Profile</h3>
-                    <button onClick={() => setShowProfileForm(false)} className="text-stone-400 hover:text-stone-600">
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-                  <div className="space-y-3">
                     <input
-                      value={pName}
-                      onChange={(e) => setPName(e.target.value)}
-                      placeholder="Name"
-                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
+                      value={pWeight}
+                      onChange={(e) => setPWeight(e.target.value)}
+                      type="number"
+                      placeholder="Weight kg"
+                      className="px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
                     />
-                    <div className="grid grid-cols-3 gap-2">
-                      <input
-                        value={pAge}
-                        onChange={(e) => setPAge(e.target.value)}
-                        type="number"
-                        placeholder="Age"
-                        className="px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
-                      />
-                      <input
-                        value={pWeight}
-                        onChange={(e) => setPWeight(e.target.value)}
-                        type="number"
-                        placeholder="Weight kg"
-                        className="px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
-                      />
-                      <input
-                        value={pHeight}
-                        onChange={(e) => setPHeight(e.target.value)}
-                        type="number"
-                        placeholder="Height cm"
-                        className="px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
-                      />
-                    </div>
+                    <input
+                      value={pHeight}
+                      onChange={(e) => setPHeight(e.target.value)}
+                      type="number"
+                      placeholder="Height cm"
+                      className="px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
+                    />
                   </div>
-                  <div className="flex justify-end gap-2 pt-4">
-                    <button onClick={() => setShowProfileForm(false)} className="text-sm text-stone-500 px-3 py-1.5">
-                      Cancel
-                    </button>
-                    <button onClick={saveProfile} className="text-sm font-medium text-white bg-teal-500 px-4 py-1.5 rounded-full">
-                      Save
-                    </button>
-                  </div>
-                </motion.div>
+                </div>
+                <div className="flex justify-end gap-2 pt-4">
+                  <button onClick={() => setShowProfileForm(false)} className="text-sm text-stone-500 px-3 py-1.5">
+                    Cancel
+                  </button>
+                  <button onClick={saveProfile} className="text-sm font-medium text-white bg-teal-500 px-4 py-1.5 rounded-full">
+                    Save
+                  </button>
+                </div>
               </motion.div>
-            )}
-          </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-          {/* 👇 PRINT WALA MODAL 👇 */}
-          <AnimatePresence>
-            {showPrintModal && (
+
+        {/* 👇 PROFILE WALA MODAL 👇 */}
+        <AnimatePresence>
+          {showProfileForm && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-stone-900/30 backdrop-blur-sm flex items-center justify-center p-4"
+              onClick={() => setShowProfileForm(false)}
+            >
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-50 bg-stone-900/30 backdrop-blur-sm flex items-center justify-center p-4 print:hidden"
-                onClick={() => setShowPrintModal(false)}
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white/90 backdrop-blur-xl border border-white/70 rounded-3xl shadow-2xl p-6 w-full max-w-sm"
               >
-                <motion.div
-                  initial={{ scale: 0.95, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.95, opacity: 0 }}
-                  onClick={(e) => e.stopPropagation()}
-                  className="bg-white/90 dark:bg-stone-800/90 backdrop-blur-xl border border-white/70 dark:border-stone-600 rounded-3xl shadow-2xl p-6 w-full max-w-xs"
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold text-stone-800 dark:text-white flex items-center gap-2">
-                      <Printer className="w-5 h-5" /> Print Settings
-                    </h3>
-                    <button onClick={() => setShowPrintModal(false)} className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-300">
-                      <X className="w-5 h-5" />
-                    </button>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-stone-800 dark:text-white">Your Profile</h3>
+                  <button onClick={() => setShowProfileForm(false)} className="text-stone-400 hover:text-stone-600">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  <input
+                    value={pName}
+                    onChange={(e) => setPName(e.target.value)}
+                    placeholder="Name"
+                    className="w-full px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
+                  />
+                  <div className="grid grid-cols-3 gap-2">
+                    <input
+                      value={pAge}
+                      onChange={(e) => setPAge(e.target.value)}
+                      type="number"
+                      placeholder="Age"
+                      className="px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
+                    />
+                    <input
+                      value={pWeight}
+                      onChange={(e) => setPWeight(e.target.value)}
+                      type="number"
+                      placeholder="Weight kg"
+                      className="px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
+                    />
+                    <input
+                      value={pHeight}
+                      onChange={(e) => setPHeight(e.target.value)}
+                      type="number"
+                      placeholder="Height cm"
+                      className="px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
+                    />
                   </div>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-medium text-stone-500 mb-1">Select Month</label>
-                      <select
-                        value={selectedPrintMonth}
-                        onChange={(e) => setSelectedPrintMonth(parseInt(e.target.value))}
-                        className="w-full px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300 cursor-pointer"
-                      >
-                        {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map((m, i) => (
-                          <option key={m} value={i}>{m}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div className="flex justify-end gap-2 pt-5">
-                    <button onClick={() => setShowPrintModal(false)} className="text-sm text-stone-500 dark:text-stone-400 px-3 py-1.5 hover:bg-stone-100 dark:hover:bg-stone-700 rounded-full transition-colors">
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleGeneratePrint}
-                      className="text-sm font-medium text-white bg-teal-500 px-4 py-1.5 rounded-full shadow hover:shadow-md transition-shadow"
+                </div>
+                <div className="flex justify-end gap-2 pt-4">
+                  <button onClick={() => setShowProfileForm(false)} className="text-sm text-stone-500 px-3 py-1.5">
+                    Cancel
+                  </button>
+                  <button onClick={saveProfile} className="text-sm font-medium text-white bg-teal-500 px-4 py-1.5 rounded-full">
+                    Save
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* 👇 PRINT WALA MODAL 👇 */}
+        <AnimatePresence>
+          {showPrintModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-stone-900/30 backdrop-blur-sm flex items-center justify-center p-4 print:hidden"
+              onClick={() => setShowPrintModal(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white/90 dark:bg-stone-800/90 backdrop-blur-xl border border-white/70 dark:border-stone-600 rounded-3xl shadow-2xl p-6 w-full max-w-xs"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-stone-800 dark:text-white flex items-center gap-2">
+                    <Printer className="w-5 h-5" /> Print Settings
+                  </h3>
+                  <button onClick={() => setShowPrintModal(false)} className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-300">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-medium text-stone-500 mb-1">Select Month</label>
+                    <select
+                      value={selectedPrintMonth}
+                      onChange={(e) => setSelectedPrintMonth(parseInt(e.target.value))}
+                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300 cursor-pointer"
                     >
-                      Generate Print
-                    </button>
+                      {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map((m, i) => (
+                        <option key={m} value={i}>{m}</option>
+                      ))}
+                    </select>
                   </div>
-                </motion.div>
+                </div>
+                <div className="flex justify-end gap-2 pt-5">
+                  <button onClick={() => setShowPrintModal(false)} className="text-sm text-stone-500 dark:text-stone-400 px-3 py-1.5 hover:bg-stone-100 dark:hover:bg-stone-700 rounded-full transition-colors">
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleGeneratePrint}
+                    className="text-sm font-medium text-white bg-teal-500 px-4 py-1.5 rounded-full shadow hover:shadow-md transition-shadow"
+                  >
+                    Generate Print
+                  </button>
+                </div>
               </motion.div>
-            )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
+          <StatCard icon={Check} label="Total Check-ins" value={totalCheckins} color="teal" />
+          <StatCard icon={Flame} label="Current Streak" value={`${currentStreak}d`} color="orange" />
+          <StatCard icon={Award} label="Best Streak Ever" value={`${bestStreakEver}d`} color="rose" />
+          <StatCard icon={Target} label="Monthly Rate" value={`${monthlyRate}%`} color="sky" />
+        </div>
+
+        <div className="bg-white/40 dark:bg-stone-800/40 backdrop-blur-xl border border-white/60 dark:border-stone-700/60 rounded-3xl shadow-lg shadow-orange-100/50 dark:shadow-black/40 p-5 sm:p-6 mb-6 flex items-start gap-3">
+          <QuoteIcon className="w-5 h-5 text-orange-400 shrink-0 mt-1" />
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={quoteIndex}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.5 }}
+              className="text-stone-700 dark:text-stone-200 italic font-medium leading-relaxed"
+            >
+              "{QUOTES[quoteIndex]}"
+            </motion.p>
           </AnimatePresence>
+        </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
-            <StatCard icon={Check} label="Total Check-ins" value={totalCheckins} color="teal" />
-            <StatCard icon={Flame} label="Current Streak" value={`${currentStreak}d`} color="orange" />
-            <StatCard icon={Award} label="Best Streak Ever" value={`${bestStreakEver}d`} color="rose" />
-            <StatCard icon={Target} label="Monthly Rate" value={`${monthlyRate}%`} color="sky" />
-          </div>
-
-          <div className="bg-white/40 dark:bg-stone-800/40 backdrop-blur-xl border border-white/60 dark:border-stone-700/60 rounded-3xl shadow-lg shadow-orange-100/50 dark:shadow-black/40 p-5 sm:p-6 mb-6 flex items-start gap-3">
-            <QuoteIcon className="w-5 h-5 text-orange-400 shrink-0 mt-1" />
-            <AnimatePresence mode="wait">
-              <motion.p
-                key={quoteIndex}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.5 }}
-                className="text-stone-700 dark:text-stone-200 italic font-medium leading-relaxed"
-              >
-                "{QUOTES[quoteIndex]}"
-              </motion.p>
-            </AnimatePresence>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="bg-white/40 dark:bg-stone-800/40 backdrop-blur-xl border border-white/60 dark:border-stone-700/60 rounded-3xl shadow-lg shadow-teal-100/50 dark:shadow-black/40 p-6 flex flex-col items-center justify-center">
-              <div className="relative w-36 h-36">
-                <svg className="w-36 h-36 -rotate-90" viewBox="0 0 132 132">
-                  <circle cx="66" cy="66" r={radius} fill="none" stroke="#e7e5e4" strokeWidth="12" />
-                  <motion.circle
-                    cx="66" cy="66" r={radius} fill="none"
-                    stroke={pct >= 100 ? '#22c55e' : '#fb923c'}
-                    strokeWidth="12"
-                    strokeLinecap="round"
-                    strokeDasharray={circumference}
-                    initial={{ strokeDashoffset: circumference }}
-                    animate={{ strokeDashoffset: offset }}
-                    transition={{ duration: 1, ease: 'easeOut' }}
-                  />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-3xl font-bold text-stone-800 dark:text-white">{pct}%</span>
-                  <span className="text-xs text-stone-500">{todayChecked}/{totalHabits} done</span>
-                </div>
-              </div>
-              <div className="w-full mt-5">
-                <div className="h-2.5 w-full bg-stone-200/60 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full rounded-full bg-gradient-to-r from-teal-400 via-emerald-400 to-orange-400"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${pct}%` }}
-                    transition={{ duration: 1, ease: 'easeOut' }}
-                  />
-                </div>
-                <p className="text-center text-xs text-stone-500 mt-2">Today's progress</p>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="bg-white/40 dark:bg-stone-800/40 backdrop-blur-xl border border-white/60 dark:border-stone-700/60 rounded-3xl shadow-lg shadow-teal-100/50 dark:shadow-black/40 p-6 flex flex-col items-center justify-center">
+            <div className="relative w-36 h-36">
+              <svg className="w-36 h-36 -rotate-90" viewBox="0 0 132 132">
+                <circle cx="66" cy="66" r={radius} fill="none" stroke="#e7e5e4" strokeWidth="12" />
+                <motion.circle
+                  cx="66" cy="66" r={radius} fill="none"
+                  stroke={pct >= 100 ? '#22c55e' : '#fb923c'}
+                  strokeWidth="12"
+                  strokeLinecap="round"
+                  strokeDasharray={circumference}
+                  initial={{ strokeDashoffset: circumference }}
+                  animate={{ strokeDashoffset: offset }}
+                  transition={{ duration: 1, ease: 'easeOut' }}
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-3xl font-bold text-stone-800 dark:text-white">{pct}%</span>
+                <span className="text-xs text-stone-500">{todayChecked}/{totalHabits} done</span>
               </div>
             </div>
+            <div className="w-full mt-5">
+              <div className="h-2.5 w-full bg-stone-200/60 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full bg-gradient-to-r from-teal-400 via-emerald-400 to-orange-400"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${pct}%` }}
+                  transition={{ duration: 1, ease: 'easeOut' }}
+                />
+              </div>
+              <p className="text-center text-xs text-stone-500 mt-2">Today's progress</p>
+            </div>
+          </div>
 
-            <div className="lg:col-span-2 bg-white/40 dark:bg-stone-800/40 backdrop-blur-xl border border-white/60 dark:border-stone-700/60 rounded-3xl shadow-lg shadow-teal-100/50 dark:shadow-black/40 p-5 sm:p-6">
-              <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-                <div className="flex items-center gap-1.5 bg-white/50 rounded-full p-1">
-                  <button
-                    onClick={() => setViewMode('weekly')}
-                    className={`flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-full transition-colors ${viewMode === 'weekly' ? 'bg-teal-500 text-white shadow' : 'text-stone-500 hover:text-stone-700'
-                      }`}
-                  >
-                    <TrendingUp className="w-4 h-4" /> Weekly
-                  </button>
-                  <button
-                    onClick={() => setViewMode('monthly')}
-                    className={`flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-full transition-colors ${viewMode === 'monthly' ? 'bg-teal-500 text-white shadow' : 'text-stone-500 hover:text-stone-700'
-                      }`}
-                  >
-                    <Calendar className="w-4 h-4" /> Monthly
-                  </button>
-                </div>
+          <div className="lg:col-span-2 bg-white/40 dark:bg-stone-800/40 backdrop-blur-xl border border-white/60 dark:border-stone-700/60 rounded-3xl shadow-lg shadow-teal-100/50 dark:shadow-black/40 p-5 sm:p-6">
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+              <div className="flex items-center gap-1.5 bg-white/50 rounded-full p-1">
                 <button
-                  onClick={() => setShowAddForm((s) => !s)}
-                  className="flex items-center gap-1 text-sm font-medium text-white bg-gradient-to-r from-teal-500 to-emerald-500 px-3 py-1.5 rounded-full shadow hover:shadow-md transition-shadow"
+                  onClick={() => setViewMode('weekly')}
+                  className={`flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-full transition-colors ${viewMode === 'weekly' ? 'bg-teal-500 text-white shadow' : 'text-stone-500 hover:text-stone-700'
+                    }`}
                 >
-                  <Plus className="w-4 h-4" /> Habit
+                  <TrendingUp className="w-4 h-4" /> Weekly
+                </button>
+                <button
+                  onClick={() => setViewMode('monthly')}
+                  className={`flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-full transition-colors ${viewMode === 'monthly' ? 'bg-teal-500 text-white shadow' : 'text-stone-500 hover:text-stone-700'
+                    }`}
+                >
+                  <Calendar className="w-4 h-4" /> Monthly
                 </button>
               </div>
+              <button
+                onClick={() => setShowAddForm((s) => !s)}
+                className="flex items-center gap-1 text-sm font-medium text-white bg-gradient-to-r from-teal-500 to-emerald-500 px-3 py-1.5 rounded-full shadow hover:shadow-md transition-shadow"
+              >
+                <Plus className="w-4 h-4" /> Habit
+              </button>
+            </div>
 
-              <AnimatePresence>
-                {showAddForm && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden mb-4"
-                  >
-                    <div className="bg-white/60 rounded-2xl p-4 border border-white/70 space-y-3">
-                      <input
-                        value={newName}
-                        onChange={(e) => setNewName(e.target.value)}
-                        placeholder="Habit name..."
-                        className="w-full px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
-                      />
-                      <div className="flex flex-wrap gap-2">
-                        {ICON_KEYS.map((key) => {
-                          const Icon = ICONS[key];
-                          return (
-                            <button
-                              key={key}
-                              onClick={() => setNewIcon(key)}
-                              className={`p-2 rounded-xl border ${newIcon === key ? 'bg-teal-500 border-teal-500 text-white' : 'bg-white border-stone-200 text-stone-500'}`}
-                            >
-                              <Icon className="w-4 h-4" />
-                            </button>
-                          );
-                        })}
-                      </div>
-                      <div className="flex gap-2">
-                        {COLOR_KEYS.map((key) => (
+            <AnimatePresence>
+              {showAddForm && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden mb-4"
+                >
+                  <div className="bg-white/60 rounded-2xl p-4 border border-white/70 space-y-3">
+                    <input
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      placeholder="Habit name..."
+                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
+                    />
+                    <div className="flex flex-wrap gap-2">
+                      {ICON_KEYS.map((key) => {
+                        const Icon = ICONS[key];
+                        return (
                           <button
                             key={key}
-                            onClick={() => setNewColor(key)}
-                            className={`w-7 h-7 rounded-full bg-gradient-to-br ${COLORS[key].grad} ${newColor === key ? 'ring-2 ring-offset-2 ring-stone-400' : ''}`}
-                          />
-                        ))}
-                      </div>
-
-                      <div className="flex gap-2">
-                        {CATEGORIES.map((cat) => (
-                          <button
-                            key={cat}
-                            onClick={() => setNewCategory(cat)}
-                            className={`text-xs font-medium px-3 py-1.5 rounded-full border ${newCategory === cat ? 'bg-teal-500 border-teal-500 text-white' : 'bg-white border-stone-200 text-stone-500'}`}
+                            onClick={() => setNewIcon(key)}
+                            className={`p-2 rounded-xl border ${newIcon === key ? 'bg-teal-500 border-teal-500 text-white' : 'bg-white border-stone-200 text-stone-500'}`}
                           >
-                            {cat}
+                            <Icon className="w-4 h-4" />
                           </button>
-                        ))}
-                      </div>
-
-                      <div className="flex justify-end gap-2 pt-1">
-                        <button onClick={cancelForm} className="text-sm text-stone-500 px-3 py-1.5">
-                          Cancel
-                        </button>
-                        <button onClick={saveHabit} className="text-sm font-medium text-white bg-teal-500 px-4 py-1.5 rounded-full">
-                          {editingHabitId ? 'Save' : 'Add'}
-                        </button>
-                      </div>
+                        );
+                      })}
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                    <div className="flex gap-2">
+                      {COLOR_KEYS.map((key) => (
+                        <button
+                          key={key}
+                          onClick={() => setNewColor(key)}
+                          className={`w-7 h-7 rounded-full bg-gradient-to-br ${COLORS[key].grad} ${newColor === key ? 'ring-2 ring-offset-2 ring-stone-400' : ''}`}
+                        />
+                      ))}
+                    </div>
 
-              {viewMode === 'weekly' && (
-                <>
-                  <div className="flex items-center gap-1 sm:gap-2 mb-2 px-1">
-                    <div className={`${LABEL_WIDTH} shrink-0`} />
-                    {weekDates.map((d, i) => {
-                      const isToday = dateKey(d) === todayKey;
-                      return (
-                        <div key={i} className="flex-1 text-center">
-                          <div className={`text-[10px] sm:text-xs font-medium ${isToday ? 'text-teal-600' : 'text-stone-400'}`}>
-                            {DAY_LABELS[i]}
-                          </div>
-                          <div className={`text-[10px] sm:text-xs ${isToday ? 'text-teal-600 font-bold' : 'text-stone-400'}`}>
+                    <div className="flex gap-2">
+                      {CATEGORIES.map((cat) => (
+                        <button
+                          key={cat}
+                          onClick={() => setNewCategory(cat)}
+                          className={`text-xs font-medium px-3 py-1.5 rounded-full border ${newCategory === cat ? 'bg-teal-500 border-teal-500 text-white' : 'bg-white border-stone-200 text-stone-500'}`}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="flex justify-end gap-2 pt-1">
+                      <button onClick={cancelForm} className="text-sm text-stone-500 px-3 py-1.5">
+                        Cancel
+                      </button>
+                      <button onClick={saveHabit} className="text-sm font-medium text-white bg-teal-500 px-4 py-1.5 rounded-full">
+                        {editingHabitId ? 'Save' : 'Add'}
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {viewMode === 'weekly' && (
+              <>
+                <div className="flex items-center gap-1 sm:gap-2 mb-2 px-1">
+                  <div className={`${LABEL_WIDTH} shrink-0`} />
+                  {weekDates.map((d, i) => {
+                    const isToday = dateKey(d) === todayKey;
+                    return (
+                      <div key={i} className="flex-1 text-center">
+                        <div className={`text-[10px] sm:text-xs font-medium ${isToday ? 'text-teal-600' : 'text-stone-400'}`}>
+                          {DAY_LABELS[i]}
+                        </div>
+                        <div className={`text-[10px] sm:text-xs ${isToday ? 'text-teal-600 font-bold' : 'text-stone-400'}`}>
+                          {d.getDate()}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="space-y-4">
+                  {CATEGORIES.map((cat) => {
+                    const catHabits = habitsByCategory[cat];
+                    if (!catHabits || catHabits.length === 0) return null;
+                    return (
+                      <div key={cat}>
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-400 mb-1.5 px-1">{cat}</p>
+                        <div className="space-y-2">
+                          <AnimatePresence>
+                            {catHabits.map((habit) => {
+                              const Icon = ICONS[habit.icon] || Footprints;
+                              const color = COLORS[habit.color] || COLORS.teal;
+                              const streak = getStreak(habit.id);
+                              return (
+                                <motion.div
+                                  key={habit.id}
+                                  layout
+                                  initial={{ opacity: 0, x: -10 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  exit={{ opacity: 0, x: 10 }}
+                                  className="flex items-center gap-1 sm:gap-2 bg-white/50 dark:bg-stone-700/40 rounded-2xl px-2 py-2 group"
+                                >
+                                  <div className={`${LABEL_WIDTH} shrink-0 flex items-center gap-2 min-w-0 pr-1`}>
+                                    <div className={`w-8 h-8 rounded-xl ${color.light} flex items-center justify-center shrink-0`}>
+                                      <Icon className={`w-4 h-4 ${color.text}`} />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <p className="text-sm font-medium text-stone-700 dark:text-stone-100 whitespace-normal break-words leading-tight">{habit.name}</p>
+                                      {streak > 0 && (
+                                        <p className="text-[10px] text-orange-500 flex items-center gap-0.5 mt-0.5">
+                                          <Flame className="w-3 h-3" /> {streak} day{streak > 1 ? 's' : ''}
+                                        </p>
+                                      )}
+                                    </div>
+                                    <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shrink-0">
+                                      <button onClick={() => openEditForm(habit)} className="text-stone-300 hover:text-teal-500 transition-colors p-1">
+                                        <Edit3 className="w-3.5 h-3.5" />
+                                      </button>
+                                      <button onClick={() => deleteHabit(habit.id)} className="text-stone-300 hover:text-rose-400 transition-colors p-1">
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
+                                  </div>
+                                  {weekDates.map((d, i) => {
+                                    const k = dateKey(d);
+                                    const entry = getEntry(checkins, k, habit.id);
+                                    const isFuture = k > todayKey;
+                                    return (
+                                      <div key={i} className="flex-1 flex justify-center">
+                                        <CheckinCell
+                                          status={entry.status}
+                                          note={entry.note}
+                                          color={color}
+                                          isFuture={isFuture}
+                                          onToggle={() => toggleCheckin(habit.id, k)}
+                                          onNote={() => setCheckinNote(habit.id, k)}
+                                        />
+                                      </div>
+                                    );
+                                  })}
+                                </motion.div>
+                              );
+                            })}
+                          </AnimatePresence>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {habits.length === 0 && (
+                    <p className="text-center text-sm text-stone-400 py-6">No habits yet — add one to get started 🌱</p>
+                  )}
+                </div>
+              </>
+            )}
+
+            {viewMode === 'monthly' && (
+              <div>
+                <div className="overflow-x-auto -mx-1 pb-2">
+                  <div className="min-w-max px-1">
+                    <div className="flex items-center gap-1 mb-2">
+                      <div className={`${LABEL_WIDTH} shrink-0`} />
+                      {monthDates.map((d) => {
+                        const isToday = dateKey(d) === todayKey;
+                        return (
+                          <div
+                            key={d.getDate()}
+                            className={`w-6 text-center text-[10px] font-medium shrink-0 ${isToday ? 'text-teal-600 font-bold' : 'text-stone-400'
+                              }`}
+                          >
                             {d.getDate()}
                           </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                        );
+                      })}
+                    </div>
 
-                  <div className="space-y-4">
-                    {CATEGORIES.map((cat) => {
-                      const catHabits = habitsByCategory[cat];
-                      if (!catHabits || catHabits.length === 0) return null;
-                      return (
-                        <div key={cat}>
-                          <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-400 mb-1.5 px-1">{cat}</p>
-                          <div className="space-y-2">
-                            <AnimatePresence>
+                    <div className="space-y-4">
+                      {CATEGORIES.map((cat) => {
+                        const catHabits = habitsByCategory[cat];
+                        if (!catHabits || catHabits.length === 0) return null;
+                        return (
+                          <div key={cat}>
+                            <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-400 mb-1 px-1">{cat}</p>
+                            <div className="space-y-2">
                               {catHabits.map((habit) => {
                                 const Icon = ICONS[habit.icon] || Footprints;
                                 const color = COLORS[habit.color] || COLORS.teal;
-                                const streak = getStreak(habit.id);
+                                const count = habitMonthlyCount(habit.id);
+                                const habitPct = monthTotalDays === 0 ? 0 : Math.round((count / monthTotalDays) * 100);
                                 return (
-                                  <motion.div
-                                    key={habit.id}
-                                    layout
-                                    initial={{ opacity: 0, x: -10 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: 10 }}
-                                    className="flex items-center gap-1 sm:gap-2 bg-white/50 dark:bg-stone-700/40 rounded-2xl px-2 py-2 group"
-                                  >
+                                  <div key={habit.id} className="flex items-center gap-1 bg-white/50 dark:bg-stone-700/40 rounded-2xl px-2 py-2">
                                     <div className={`${LABEL_WIDTH} shrink-0 flex items-center gap-2 min-w-0 pr-1`}>
                                       <div className={`w-8 h-8 rounded-xl ${color.light} flex items-center justify-center shrink-0`}>
                                         <Icon className={`w-4 h-4 ${color.text}`} />
                                       </div>
-                                      <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-medium text-stone-700 dark:text-stone-100 whitespace-normal break-words leading-tight">{habit.name}</p>
-                                        {streak > 0 && (
-                                          <p className="text-[10px] text-orange-500 flex items-center gap-0.5 mt-0.5">
-                                            <Flame className="w-3 h-3" /> {streak} day{streak > 1 ? 's' : ''}
-                                          </p>
-                                        )}
-                                      </div>
-                                      <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shrink-0">
-                                        <button onClick={() => openEditForm(habit)} className="text-stone-300 hover:text-teal-500 transition-colors p-1">
-                                          <Edit3 className="w-3.5 h-3.5" />
-                                        </button>
-                                        <button onClick={() => deleteHabit(habit.id)} className="text-stone-300 hover:text-rose-400 transition-colors p-1">
-                                          <Trash2 className="w-3.5 h-3.5" />
-                                        </button>
+                                      <div className="min-w-0">
+                                        <p className="text-sm font-medium text-stone-700 dark:text-stone-100 truncate">{habit.name}</p>
+                                        <p className="text-[10px] text-stone-400">{count}/{monthTotalDays} · {habitPct}%</p>
                                       </div>
                                     </div>
-                                    {weekDates.map((d, i) => {
+                                    {monthDates.map((d) => {
                                       const k = dateKey(d);
                                       const entry = getEntry(checkins, k, habit.id);
                                       const isFuture = k > todayKey;
                                       return (
-                                        <div key={i} className="flex-1 flex justify-center">
-                                          <CheckinCell
-                                            status={entry.status}
-                                            note={entry.note}
-                                            color={color}
-                                            isFuture={isFuture}
-                                            onToggle={() => toggleCheckin(habit.id, k)}
-                                            onNote={() => setCheckinNote(habit.id, k)}
-                                          />
-                                        </div>
+                                        <CheckinCell
+                                          key={k}
+                                          status={entry.status}
+                                          note={entry.note}
+                                          color={color}
+                                          isFuture={isFuture}
+                                          size="sm"
+                                          shape="square"
+                                          onToggle={() => toggleCheckin(habit.id, k)}
+                                          onNote={() => setCheckinNote(habit.id, k)}
+                                        />
                                       );
                                     })}
-                                  </motion.div>
+                                  </div>
                                 );
                               })}
-                            </AnimatePresence>
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
-                    {habits.length === 0 && (
-                      <p className="text-center text-sm text-stone-400 py-6">No habits yet — add one to get started 🌱</p>
-                    )}
-                  </div>
-                </>
-              )}
-
-              {viewMode === 'monthly' && (
-                <div>
-                  <div className="overflow-x-auto -mx-1 pb-2">
-                    <div className="min-w-max px-1">
-                      <div className="flex items-center gap-1 mb-2">
-                        <div className={`${LABEL_WIDTH} shrink-0`} />
-                        {monthDates.map((d) => {
-                          const isToday = dateKey(d) === todayKey;
-                          return (
-                            <div
-                              key={d.getDate()}
-                              className={`w-6 text-center text-[10px] font-medium shrink-0 ${isToday ? 'text-teal-600 font-bold' : 'text-stone-400'
-                                }`}
-                            >
-                              {d.getDate()}
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      <div className="space-y-4">
-                        {CATEGORIES.map((cat) => {
-                          const catHabits = habitsByCategory[cat];
-                          if (!catHabits || catHabits.length === 0) return null;
-                          return (
-                            <div key={cat}>
-                              <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-400 mb-1 px-1">{cat}</p>
-                              <div className="space-y-2">
-                                {catHabits.map((habit) => {
-                                  const Icon = ICONS[habit.icon] || Footprints;
-                                  const color = COLORS[habit.color] || COLORS.teal;
-                                  const count = habitMonthlyCount(habit.id);
-                                  const habitPct = monthTotalDays === 0 ? 0 : Math.round((count / monthTotalDays) * 100);
-                                  return (
-                                    <div key={habit.id} className="flex items-center gap-1 bg-white/50 dark:bg-stone-700/40 rounded-2xl px-2 py-2">
-                                      <div className={`${LABEL_WIDTH} shrink-0 flex items-center gap-2 min-w-0 pr-1`}>
-                                        <div className={`w-8 h-8 rounded-xl ${color.light} flex items-center justify-center shrink-0`}>
-                                          <Icon className={`w-4 h-4 ${color.text}`} />
-                                        </div>
-                                        <div className="min-w-0">
-                                          <p className="text-sm font-medium text-stone-700 dark:text-stone-100 truncate">{habit.name}</p>
-                                          <p className="text-[10px] text-stone-400">{count}/{monthTotalDays} · {habitPct}%</p>
-                                        </div>
-                                      </div>
-                                      {monthDates.map((d) => {
-                                        const k = dateKey(d);
-                                        const entry = getEntry(checkins, k, habit.id);
-                                        const isFuture = k > todayKey;
-                                        return (
-                                          <CheckinCell
-                                            key={k}
-                                            status={entry.status}
-                                            note={entry.note}
-                                            color={color}
-                                            isFuture={isFuture}
-                                            size="sm"
-                                            shape="square"
-                                            onToggle={() => toggleCheckin(habit.id, k)}
-                                            onNote={() => setCheckinNote(habit.id, k)}
-                                          />
-                                        );
-                                      })}
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          );
-                        })}
-                        {habits.length === 0 && (
-                          <p className="text-center text-sm text-stone-400 py-6">No habits yet — add one to get started 🌱</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {habits.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-stone-200/60 text-xs">
-                      <span className="bg-white/60 px-3 py-1.5 rounded-full text-stone-600">
-                        <strong className="text-stone-800 dark:text-white">{monthlyCompleted}</strong> total check-ins this month
-                      </span>
-                      <span className="bg-white/60 px-3 py-1.5 rounded-full text-stone-600">
-                        Monthly completion: <strong className="text-stone-800 dark:text-white">{monthlyRate}%</strong>
-                      </span>
-                      {bestHabit && (
-                        <span className="bg-white/60 px-3 py-1.5 rounded-full text-stone-600">
-                          Best habit: <strong className="text-stone-800 dark:text-white">{bestHabit.habit.name}</strong> ({bestHabit.count}/{monthTotalDays})
-                        </span>
+                        );
+                      })}
+                      {habits.length === 0 && (
+                        <p className="text-center text-sm text-stone-400 py-6">No habits yet — add one to get started 🌱</p>
                       )}
                     </div>
-                  )}
+                  </div>
                 </div>
-              )}
-            </div>
+
+                {habits.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-stone-200/60 text-xs">
+                    <span className="bg-white/60 px-3 py-1.5 rounded-full text-stone-600">
+                      <strong className="text-stone-800 dark:text-white">{monthlyCompleted}</strong> total check-ins this month
+                    </span>
+                    <span className="bg-white/60 px-3 py-1.5 rounded-full text-stone-600">
+                      Monthly completion: <strong className="text-stone-800 dark:text-white">{monthlyRate}%</strong>
+                    </span>
+                    {bestHabit && (
+                      <span className="bg-white/60 px-3 py-1.5 rounded-full text-stone-600">
+                        Best habit: <strong className="text-stone-800 dark:text-white">{bestHabit.habit.name}</strong> ({bestHabit.count}/{monthTotalDays})
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-        </motion.div>
-      </div>
+        </div>
+
+
+        <div className="mt-10 border-t border-stone-200/50 dark:border-stone-700/50 pt-4 flex flex-col sm:flex-row justify-between items-center gap-2 text-[11px] text-stone-500 dark:text-stone-400 font-medium tracking-wide">
+          <p>© {new Date().getFullYear()} M Yousaf. All Rights Reserved. 2026</p>
+          <p className="flex items-center gap-1">® Trademark Registered</p>
+        </div>
+
+
+      </motion.div>
+    </div >
       <PrintView habits={habits} year={printYear} month={printMonth} />
     </>
   );
