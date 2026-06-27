@@ -363,6 +363,23 @@ export default function HabitTracker() {
     return streak;
   };
 
+const currentStreak = useMemo(() => {
+
+    if (!habits || habits.length === 0) return 0;
+    return habits.reduce((max, h) => Math.max(max, getStreak(h.id)), 0);
+  }, [habits, checkins]);
+
+  const habitMonthlyCount = (habitId) => {
+    let count = 0;
+    monthDates.forEach((d) => {
+      if (d > today) return; 
+      const k = dateKey(d);
+      if (getEntry(checkins, k, habitId).status === 'checked') count++;
+    });
+    return count;
+
+  };
+
   const totalCheckins = useMemo(() => {
     let count = 0;
     habits.forEach((h) => {
@@ -399,6 +416,8 @@ export default function HabitTracker() {
     return bestCount > 0 ? { habit: best, count: bestCount } : null;
   }, [habits, checkins, monthDates]);
 
+
+  
   const habitsByCategory = useMemo(() => {
     const groups = {};
     CATEGORIES.forEach((c) => (groups[c] = []));
@@ -409,7 +428,7 @@ export default function HabitTracker() {
     return groups;
   }, [habits]);
 
-  // Screen Switching Logic (Now perfectly safe because all hooks have run)
+
   if (!user) {
     return <LoginScreen />;
   }
@@ -544,20 +563,7 @@ export default function HabitTracker() {
   const offset = circumference - (pct / 100) * circumference;
 
   const LABEL_WIDTH = 'w-32 sm:w-44';
-const currentStreak = useMemo(() => {
-    if (!habits || habits.length === 0) return 0;
-    return habits.reduce((max, h) => Math.max(max, getStreak(h.id)), 0);
-  }, [habits, checkins]);
 
-  const habitMonthlyCount = (habitId) => {
-    let count = 0;
-    monthDates.forEach((d) => {
-      if (d > today) return; 
-      const k = dateKey(d);
-      if (getEntry(checkins, k, habitId).status === 'checked') count++;
-    });
-    return count;
-  };
 
   // 👇 YAHAN SE RETURN SHURU HO RAHA HAI (Yeh missing tha) 👇
   return (
