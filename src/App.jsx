@@ -636,16 +636,26 @@ export default function HabitTracker() {
 
 
 
-  // 👇 YAHAN SE RETURN SHURU HO RAHA HAI 👇
+
   return (
     <>
       <div className="print:hidden min-h-screen relative overflow-hidden bg-gradient-to-br from-cyan-50 via-teal-50 to-amber-50 dark:from-stone-900 dark:via-stone-800 dark:to-teal-950 dark:text-stone-200 transition-colors duration-500 font-sans">
         
-        {/* HEADER SECTION */}
+  
         <header className="relative z-20 w-full bg-white/40 dark:bg-stone-900/40 backdrop-blur-xl border-b border-white/60 dark:border-stone-700/60 shadow-sm px-4 sm:px-6 py-3 flex justify-between items-center transition-colors">
-          <span className="font-bold text-stone-700 dark:text-stone-200 tracking-wide text-sm sm:text-base">
-            usafs habitstracker
-          </span>
+          
+         
+          <div className="flex items-center gap-2 sm:gap-3">
+            <img 
+              src="https://res.cloudinary.com/dy1wk6svu/image/upload/f_auto,q_auto/bg_hou2cp" 
+              alt="usafs logo" 
+              className="h-8 sm:h-10 w-auto rounded-lg object-contain drop-shadow-sm"
+            />
+            <span className="font-bold text-stone-700 dark:text-stone-200 tracking-wide text-sm sm:text-base hidden sm:block">
+              USAF's Habit Tracker
+            </span>
+          </div>
+     
 
           <div className="flex items-center gap-3">
             <button
