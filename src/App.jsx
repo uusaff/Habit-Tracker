@@ -678,65 +678,7 @@ export default function HabitTracker() {
                 exit={{ opacity: 0 }}
                 className="fixed inset-0 z-50 bg-stone-900/30 backdrop-blur-sm flex items-center justify-center p-4"
                 onClick={() => setShowProfileForm(false)}
-
-
               >
-
-                {/* 👇 PRINT POPUP (DROPDOWN WALA) 👇 */}
-                <AnimatePresence>
-                  {showPrintModal && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="fixed inset-0 z-50 bg-stone-900/30 backdrop-blur-sm flex items-center justify-center p-4 print:hidden"
-                      onClick={() => setShowPrintModal(false)}
-                    >
-                      <motion.div
-                        initial={{ scale: 0.95, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0.95, opacity: 0 }}
-                        onClick={(e) => e.stopPropagation()}
-                        className="bg-white/90 dark:bg-stone-800/90 backdrop-blur-xl border border-white/70 dark:border-stone-600 rounded-3xl shadow-2xl p-6 w-full max-w-xs"
-                      >
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="font-semibold text-stone-800 dark:text-white flex items-center gap-2">
-                            <Printer className="w-5 h-5" /> Print Settings
-                          </h3>
-                          <button onClick={() => setShowPrintModal(false)} className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-300">
-                            <X className="w-5 h-5" />
-                          </button>
-                        </div>
-                        <div className="space-y-4">
-                          <div>
-                            <label className="block text-xs font-medium text-stone-500 mb-1">Select Month</label>
-                            <select
-                              value={selectedPrintMonth}
-                              onChange={(e) => setSelectedPrintMonth(parseInt(e.target.value))}
-                              className="w-full px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300 cursor-pointer"
-                            >
-                              {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map((m, i) => (
-                                <option key={m} value={i}>{m}</option>
-                              ))}
-                            </select>
-                          </div>
-                        </div>
-                        <div className="flex justify-end gap-2 pt-5">
-                          <button onClick={() => setShowPrintModal(false)} className="text-sm text-stone-500 dark:text-stone-400 px-3 py-1.5 hover:bg-stone-100 dark:hover:bg-stone-700 rounded-full transition-colors">
-                            Cancel
-                          </button>
-                          <button
-                            onClick={handleGeneratePrint}
-                            className="text-sm font-medium text-white bg-teal-500 px-4 py-1.5 rounded-full shadow hover:shadow-md transition-shadow"
-                          >
-                            Generate Print
-                          </button>
-                        </div>
-                      </motion.div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
                 <motion.div
                   initial={{ scale: 0.95, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
@@ -787,6 +729,129 @@ export default function HabitTracker() {
                     </button>
                     <button onClick={saveProfile} className="text-sm font-medium text-white bg-teal-500 px-4 py-1.5 rounded-full">
                       Save
+                    </button>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+
+          {/* 👇 PROFILE WALA MODAL 👇 */}
+          <AnimatePresence>
+            {showProfileForm && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 bg-stone-900/30 backdrop-blur-sm flex items-center justify-center p-4"
+                onClick={() => setShowProfileForm(false)}
+              >
+                <motion.div
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.95, opacity: 0 }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="bg-white/90 backdrop-blur-xl border border-white/70 rounded-3xl shadow-2xl p-6 w-full max-w-sm"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold text-stone-800 dark:text-white">Your Profile</h3>
+                    <button onClick={() => setShowProfileForm(false)} className="text-stone-400 hover:text-stone-600">
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <div className="space-y-3">
+                    <input
+                      value={pName}
+                      onChange={(e) => setPName(e.target.value)}
+                      placeholder="Name"
+                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
+                    />
+                    <div className="grid grid-cols-3 gap-2">
+                      <input
+                        value={pAge}
+                        onChange={(e) => setPAge(e.target.value)}
+                        type="number"
+                        placeholder="Age"
+                        className="px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
+                      />
+                      <input
+                        value={pWeight}
+                        onChange={(e) => setPWeight(e.target.value)}
+                        type="number"
+                        placeholder="Weight kg"
+                        className="px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
+                      />
+                      <input
+                        value={pHeight}
+                        onChange={(e) => setPHeight(e.target.value)}
+                        type="number"
+                        placeholder="Height cm"
+                        className="px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-4">
+                    <button onClick={() => setShowProfileForm(false)} className="text-sm text-stone-500 px-3 py-1.5">
+                      Cancel
+                    </button>
+                    <button onClick={saveProfile} className="text-sm font-medium text-white bg-teal-500 px-4 py-1.5 rounded-full">
+                      Save
+                    </button>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* 👇 PRINT WALA MODAL 👇 */}
+          <AnimatePresence>
+            {showPrintModal && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 bg-stone-900/30 backdrop-blur-sm flex items-center justify-center p-4 print:hidden"
+                onClick={() => setShowPrintModal(false)}
+              >
+                <motion.div
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.95, opacity: 0 }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="bg-white/90 dark:bg-stone-800/90 backdrop-blur-xl border border-white/70 dark:border-stone-600 rounded-3xl shadow-2xl p-6 w-full max-w-xs"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold text-stone-800 dark:text-white flex items-center gap-2">
+                      <Printer className="w-5 h-5" /> Print Settings
+                    </h3>
+                    <button onClick={() => setShowPrintModal(false)} className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-300">
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-medium text-stone-500 mb-1">Select Month</label>
+                      <select
+                        value={selectedPrintMonth}
+                        onChange={(e) => setSelectedPrintMonth(parseInt(e.target.value))}
+                        className="w-full px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-300 cursor-pointer"
+                      >
+                        {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map((m, i) => (
+                          <option key={m} value={i}>{m}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-5">
+                    <button onClick={() => setShowPrintModal(false)} className="text-sm text-stone-500 dark:text-stone-400 px-3 py-1.5 hover:bg-stone-100 dark:hover:bg-stone-700 rounded-full transition-colors">
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleGeneratePrint}
+                      className="text-sm font-medium text-white bg-teal-500 px-4 py-1.5 rounded-full shadow hover:shadow-md transition-shadow"
+                    >
+                      Generate Print
                     </button>
                   </div>
                 </motion.div>
@@ -1132,7 +1197,7 @@ export default function HabitTracker() {
           </div>
         </motion.div>
       </div>
-      <PrintView habits={habits} checkins={checkins} year={year} month={month} />
+      <PrintView habits={habits} year={printYear} month={printMonth} />
     </>
   );
 }
