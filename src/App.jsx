@@ -17,12 +17,12 @@ const ICONS = { Footprints, BookOpen, Moon, Leaf, Dumbbell, Droplet, Brain, Hear
 const ICON_KEYS = Object.keys(ICONS);
 
 const COLORS = {
-  teal:   { grad: 'from-teal-400 to-cyan-400',     solid: 'bg-teal-500',    light: 'bg-teal-50',    text: 'text-teal-600' },
-  orange: { grad: 'from-orange-400 to-amber-400',  solid: 'bg-orange-500',  light: 'bg-orange-50',  text: 'text-orange-600' },
-  green:  { grad: 'from-emerald-400 to-green-500', solid: 'bg-emerald-500', light: 'bg-emerald-50', text: 'text-emerald-600' },
-  sand:   { grad: 'from-amber-300 to-yellow-400',  solid: 'bg-amber-400',   light: 'bg-amber-50',   text: 'text-amber-600' },
-  rose:   { grad: 'from-rose-400 to-pink-400',     solid: 'bg-rose-500',    light: 'bg-rose-50',    text: 'text-rose-600' },
-  sky:    { grad: 'from-sky-400 to-blue-400',      solid: 'bg-sky-500',     light: 'bg-sky-50',     text: 'text-sky-600' },
+  teal: { grad: 'from-teal-400 to-cyan-400', solid: 'bg-teal-500', light: 'bg-teal-50', text: 'text-teal-600' },
+  orange: { grad: 'from-orange-400 to-amber-400', solid: 'bg-orange-500', light: 'bg-orange-50', text: 'text-orange-600' },
+  green: { grad: 'from-emerald-400 to-green-500', solid: 'bg-emerald-500', light: 'bg-emerald-50', text: 'text-emerald-600' },
+  sand: { grad: 'from-amber-300 to-yellow-400', solid: 'bg-amber-400', light: 'bg-amber-50', text: 'text-amber-600' },
+  rose: { grad: 'from-rose-400 to-pink-400', solid: 'bg-rose-500', light: 'bg-rose-50', text: 'text-rose-600' },
+  sky: { grad: 'from-sky-400 to-blue-400', solid: 'bg-sky-500', light: 'bg-sky-50', text: 'text-sky-600' },
 };
 const COLOR_KEYS = Object.keys(COLORS);
 
@@ -173,6 +173,7 @@ export default function HabitTracker() {
   const [profile, setProfile] = useProfileStorage();
   const [quoteIndex, setQuoteIndex] = useState(0);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingHabitId, setEditingHabitId] = useState(null);
   const [newName, setNewName] = useState('');
   const [newIcon, setNewIcon] = useState('Footprints');
   const [newColor, setNewColor] = useState('teal');
@@ -185,8 +186,8 @@ export default function HabitTracker() {
   const [viewMode, setViewMode] = useState('weekly');
   const [user, setUser] = useState(null);
 
-const [theme, setTheme] = useState(() => {
-    
+  const [theme, setTheme] = useState(() => {
+
     return localStorage.getItem('theme') || 'light';
   });
 
@@ -325,21 +326,65 @@ const [theme, setTheme] = useState(() => {
     });
   };
 
-  const addHabit = () => {
+  const openEditForm = (habit) => {
+    setEditingHabitId(habit.id);
+    setNewName(habit.name);
+    setNewIcon(habit.icon);
+    setNewColor(habit.color);
+    setShowAddForm(true);
+  };
+
+  const saveHabit = () => {
     if (!newName.trim()) return;
-    const id = 'h' + Date.now();
-    setData((prev) => ({
-      ...prev,
-      habits: [...prev.habits, { id, name: newName.trim(), icon: newIcon, color: newColor }],
-    }));
-    setNewName('');
-    setNewIcon('Footprints');
-    setNewColor('teal');
+
+    if (editingHabitId) {
+      // Update existing habit
+      setData((prev) => ({
+        ...prev,
+        habits: prev.habits.map((h) =>
+          h.id === editingHabitId
+            ? {
+              ...h,
+              name: newName.trim(),
+              icon: newIcon,
+              color: newColor,
+            }
+            : h
+        ),
+      }));
+    } else {
+      // Add new habit
+      const id = "h" + Date.now();
+      setData((prev) => ({
+        ...prev,
+        habits: [
+          ...prev.habits,
+          {
+            id,
+            name: newName.trim(),
+            icon: newIcon,
+            color: newColor,
+          },
+        ],
+      }));
+    }
+
+    cancelForm();
+  };
+
+  const cancelForm = () => {
+    setNewName("");
+    setNewIcon("Footprints");
+    setNewColor("teal");
+    setEditingHabitId(null);
     setShowAddForm(false);
   };
 
   const deleteHabit = (id) => {
-    setData((prev) => ({ ...prev, habits: prev.habits.filter((h) => h.id !== id) }));
+    setData((prev) => ({
+      ...prev,
+      habits: prev.habits.filter((h) => h.id !== id),
+    }));
   };
 
   const openProfileForm = () => {
@@ -367,9 +412,9 @@ const [theme, setTheme] = useState(() => {
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-cyan-50 via-teal-50 to-amber-50 dark:from-stone-900 dark:via-stone-800 dark:to-teal-950 dark:text-stone-200 transition-colors duration-500 font-sans">
-    <header className="relative z-20 w-full bg-white/40 dark:bg-stone-900/40 backdrop-blur-xl border-b border-white/60 dark:border-stone-700/60 shadow-sm px-4 sm:px-6 py-3 flex justify-between items-center transition-colors">
+      <header className="relative z-20 w-full bg-white/40 dark:bg-stone-900/40 backdrop-blur-xl border-b border-white/60 dark:border-stone-700/60 shadow-sm px-4 sm:px-6 py-3 flex justify-between items-center transition-colors">
         <span className="font-bold text-stone-700 dark:text-stone-200 tracking-wide text-sm sm:text-base">Habit Tracker</span>
-        
+
         <div className="flex items-center gap-3">
           {/* 👇 Dark Mode Toggle Button 👇 */}
           <button
@@ -378,7 +423,7 @@ const [theme, setTheme] = useState(() => {
           >
             {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
           </button>
-          
+
           <a
             href="https://github.com/uusaff"
             target="_blank"
@@ -521,14 +566,14 @@ const [theme, setTheme] = useState(() => {
         <div className="bg-white/40 dark:bg-stone-800/40 backdrop-blur-xl border border-white/60 dark:border-stone-700/60 rounded-3xl shadow-lg shadow-orange-100/50 dark:shadow-black/40 p-5 sm:p-6 mb-6 flex items-start gap-3">
           <QuoteIcon className="w-5 h-5 text-orange-400 shrink-0 mt-1" />
           <AnimatePresence mode="wait">
-           <motion.p
-  key={quoteIndex}
-  initial={{ opacity: 0, y: 8 }}
-  animate={{ opacity: 1, y: 0 }}
-  exit={{ opacity: 0, y: -8 }}
-  transition={{ duration: 0.5 }}
-  className="text-stone-700 dark:text-stone-200 italic font-medium leading-relaxed" 
->
+            <motion.p
+              key={quoteIndex}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.5 }}
+              className="text-stone-700 dark:text-stone-200 italic font-medium leading-relaxed"
+            >
               "{QUOTES[quoteIndex]}"
             </motion.p>
           </AnimatePresence>
@@ -573,17 +618,15 @@ const [theme, setTheme] = useState(() => {
               <div className="flex items-center gap-1.5 bg-white/50 rounded-full p-1">
                 <button
                   onClick={() => setViewMode('weekly')}
-                  className={`flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-full transition-colors ${
-                    viewMode === 'weekly' ? 'bg-teal-500 text-white shadow' : 'text-stone-500 hover:text-stone-700'
-                  }`}
+                  className={`flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-full transition-colors ${viewMode === 'weekly' ? 'bg-teal-500 text-white shadow' : 'text-stone-500 hover:text-stone-700'
+                    }`}
                 >
                   <TrendingUp className="w-4 h-4" /> Weekly
                 </button>
                 <button
                   onClick={() => setViewMode('monthly')}
-                  className={`flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-full transition-colors ${
-                    viewMode === 'monthly' ? 'bg-teal-500 text-white shadow' : 'text-stone-500 hover:text-stone-700'
-                  }`}
+                  className={`flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-full transition-colors ${viewMode === 'monthly' ? 'bg-teal-500 text-white shadow' : 'text-stone-500 hover:text-stone-700'
+                    }`}
                 >
                   <Calendar className="w-4 h-4" /> Monthly
                 </button>
@@ -635,11 +678,11 @@ const [theme, setTheme] = useState(() => {
                       ))}
                     </div>
                     <div className="flex justify-end gap-2 pt-1">
-                      <button onClick={() => setShowAddForm(false)} className="text-sm text-stone-500 px-3 py-1.5">
+                      <button onClick={cancelForm} className="text-sm text-stone-500 px-3 py-1.5">
                         Cancel
                       </button>
-                      <button onClick={addHabit} className="text-sm font-medium text-white bg-teal-500 px-4 py-1.5 rounded-full">
-                        Add
+                      <button onClick={saveHabit} className="text-sm font-medium text-white bg-teal-500 px-4 py-1.5 rounded-full">
+                        {editingHabitId ? 'Save' : 'Add'}
                       </button>
                     </div>
                   </div>
@@ -693,12 +736,20 @@ const [theme, setTheme] = useState(() => {
                                 </p>
                               )}
                             </div>
-                            <button
-                              onClick={() => deleteHabit(habit.id)}
-                              className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity text-stone-300 hover:text-rose-400 shrink-0"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
+                            <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shrink-0">
+                              <button
+                                onClick={() => openEditForm(habit)}
+                                className="text-stone-300 hover:text-teal-500 transition-colors p-1"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => deleteHabit(habit.id)}
+                                className="text-stone-300 hover:text-rose-400 transition-colors p-1"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </div>
                           {weekDates.map((d, i) => {
                             const k = dateKey(d);
@@ -710,13 +761,12 @@ const [theme, setTheme] = useState(() => {
                                   disabled={isFuture}
                                   whileTap={!isFuture ? { scale: 0.85 } : {}}
                                   onClick={() => !isFuture && toggleCheckin(habit.id, k)}
-                                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border-2 transition-colors ${
-                                    isFuture
+                                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border-2 transition-colors ${isFuture
                                       ? 'border-stone-100 bg-stone-50/50 cursor-not-allowed opacity-50'
                                       : checked
-                                      ? `${color.solid} border-transparent`
-                                      : 'border-stone-200 dark:border-stone-600 bg-white dark:bg-stone-800 hover:border-stone-300 cursor-pointer'
-                                  }`}
+                                        ? `${color.solid} border-transparent`
+                                        : 'border-stone-200 dark:border-stone-600 bg-white dark:bg-stone-800 hover:border-stone-300 cursor-pointer'
+                                    }`}
                                 >
                                   <AnimatePresence>
                                     {checked && (
@@ -756,9 +806,8 @@ const [theme, setTheme] = useState(() => {
                         return (
                           <div
                             key={d.getDate()}
-                            className={`w-6 text-center text-[10px] font-medium shrink-0 ${
-                              isToday ? 'text-teal-600 font-bold' : 'text-stone-400'
-                            }`}
+                            className={`w-6 text-center text-[10px] font-medium shrink-0 ${isToday ? 'text-teal-600 font-bold' : 'text-stone-400'
+                              }`}
                           >
                             {d.getDate()}
                           </div>
@@ -792,13 +841,12 @@ const [theme, setTheme] = useState(() => {
                                   key={k}
                                   disabled={isFuture}
                                   onClick={() => !isFuture && toggleCheckin(habit.id, k)}
-                                  className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 transition-colors ${
-                                    isFuture
+                                  className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 transition-colors ${isFuture
                                       ? 'bg-stone-50/50 cursor-not-allowed opacity-40'
                                       : checked
-                                      ? `${color.solid}`
-                                      : 'bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white hover:border-stone-300 cursor-pointer'
-                                  }`}
+                                        ? `${color.solid}`
+                                        : 'bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white hover:border-stone-300 cursor-pointer'
+                                    }`}
                                 >
                                   {checked && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
                                 </button>
