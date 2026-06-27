@@ -423,7 +423,7 @@ const [theme, setTheme] = useState(() => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-white/40 dark:bg-stone-800/40 backdrop-blur-xl border border-white/60 dark:border-stone-700/60 rounded-3xl shadow-lg shadow-emerald-100/50 p-5 sm:p-6 mb-6 flex flex-wrap items-center gap-4"
+          className="bg-white/40 dark:bg-stone-800/40 backdrop-blur-xl border border-white/60 dark:border-stone-700/60 rounded-3xl shadow-lg shadow-emerald-100/50 dark:shadow-black/40 p-5 sm:p-6 mb-6 flex flex-wrap items-center gap-4"
         >
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-xl font-bold shrink-0 shadow-md">
             {profile.name ? profile.name.trim()[0].toUpperCase() : <User className="w-6 h-6" />}
@@ -518,24 +518,24 @@ const [theme, setTheme] = useState(() => {
           <StatCard icon={Target} label="Monthly Rate" value={`${monthlyRate}%`} color="sky" />
         </div>
 
-        <div className="bg-white/40 dark:bg-stone-800/40 backdrop-blur-xl border border-white/60 dark:border-stone-700/60 rounded-3xl shadow-lg shadow-orange-100/50 p-5 sm:p-6 mb-6 flex items-start gap-3">
+        <div className="bg-white/40 dark:bg-stone-800/40 backdrop-blur-xl border border-white/60 dark:border-stone-700/60 rounded-3xl shadow-lg shadow-orange-100/50 dark:shadow-black/40 p-5 sm:p-6 mb-6 flex items-start gap-3">
           <QuoteIcon className="w-5 h-5 text-orange-400 shrink-0 mt-1" />
           <AnimatePresence mode="wait">
-            <motion.p
-              key={quoteIndex}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.5 }}
-              className="text-stone-700 italic font-medium leading-relaxed"
-            >
+           <motion.p
+  key={quoteIndex}
+  initial={{ opacity: 0, y: 8 }}
+  animate={{ opacity: 1, y: 0 }}
+  exit={{ opacity: 0, y: -8 }}
+  transition={{ duration: 0.5 }}
+  className="text-stone-700 dark:text-stone-200 italic font-medium leading-relaxed" 
+>
               "{QUOTES[quoteIndex]}"
             </motion.p>
           </AnimatePresence>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="bg-white/40 dark:bg-stone-800/40 backdrop-blur-xl border border-white/60 dark:border-stone-700/60 rounded-3xl shadow-lg shadow-teal-100/50 p-6 flex flex-col items-center justify-center">
+          <div className="bg-white/40 dark:bg-stone-800/40 backdrop-blur-xl border border-white/60 dark:border-stone-700/60 rounded-3xl shadow-lg shadow-teal-100/50 dark:shadow-black/40 p-6 flex flex-col items-center justify-center">
             <div className="relative w-36 h-36">
               <svg className="w-36 h-36 -rotate-90" viewBox="0 0 132 132">
                 <circle cx="66" cy="66" r={radius} fill="none" stroke="#e7e5e4" strokeWidth="12" />
@@ -568,7 +568,7 @@ const [theme, setTheme] = useState(() => {
             </div>
           </div>
 
-          <div className="lg:col-span-2 bg-white/40 dark:bg-stone-800/40 backdrop-blur-xl border border-white/60 dark:border-stone-700/60 rounded-3xl shadow-lg shadow-teal-100/50 p-5 sm:p-6">
+          <div className="lg:col-span-2 bg-white/40 dark:bg-stone-800/40 backdrop-blur-xl border border-white/60 dark:border-stone-700/60 rounded-3xl shadow-lg shadow-teal-100/50 dark:shadow-black/40 p-5 sm:p-6">
             <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
               <div className="flex items-center gap-1.5 bg-white/50 rounded-full p-1">
                 <button
