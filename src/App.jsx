@@ -100,7 +100,7 @@ function getLongestStreak(habitId, checkins) {
       current++;
       longest = Math.max(longest, current);
     } else if (entry.status !== 'skipped') {
-      current = 0; 
+      current = 0;
     }
   }
   return longest;
@@ -290,6 +290,7 @@ export default function HabitTracker() {
   const [newName, setNewName] = useState('');
   const [newIcon, setNewIcon] = useState('Footprints');
   const [newColor, setNewColor] = useState('teal');
+  const [newCategory, setNewCategory] = useState('Anytime');
 
   const [showProfileForm, setShowProfileForm] = useState(false);
   const [pName, setPName] = useState('');
@@ -348,12 +349,13 @@ export default function HabitTracker() {
   const getStreak = (habitId) => {
     let streak = 0;
     const cursor = new Date();
-    // eslint-disable-next-line no-constant-condition
     while (true) {
-      const k = dateKey(cursor);
-      if (checkins[k]?.[habitId]) {
+      const entry = getEntry(checkins, dateKey(cursor), habitId);
+      if (entry.status === 'checked') {
         streak++;
         cursor.setDate(cursor.getDate() - 1);
+      } else if (entry.status === 'skipped') {
+        cursor.setDate(cursor.getDate() - 1); // ignored, doesn't break or extend
       } else {
         break;
       }
@@ -361,27 +363,15 @@ export default function HabitTracker() {
     return streak;
   };
 
-  const habitMonthlyCount = (habitId) => {
-    let count = 0;
-    monthDates.forEach((d) => {
-      if (checkins[dateKey(d)]?.[habitId]) count++;
-    });
-    return count;
-  };
-
-  // Move ALL useMemos above the early returns!
   const totalCheckins = useMemo(() => {
     let count = 0;
-    Object.values(checkins).forEach((day) => {
-      Object.values(day).forEach((v) => { if (v) count++; });
+    habits.forEach((h) => {
+      Object.keys(checkins).forEach((k) => {
+        if (getEntry(checkins, k, h.id).status === 'checked') count++;
+      });
     });
     return count;
-  }, [checkins]);
-
-  const currentStreak = useMemo(
-    () => habits.reduce((max, h) => Math.max(max, getStreak(h.id)), 0),
-    [habits, checkins]
-  );
+  }, [checkins, habits]);
 
   const bestStreakEver = useMemo(
     () => habits.reduce((max, h) => Math.max(max, getLongestStreak(h.id, checkins)), 0),
@@ -393,7 +383,7 @@ export default function HabitTracker() {
     monthDates.forEach((d) => {
       if (d > today) return;
       const k = dateKey(d);
-      habits.forEach((h) => { if (checkins[k]?.[h.id]) count++; });
+      habits.forEach((h) => { if (getEntry(checkins, k, h.id).status === 'checked') count++; });
     });
     return count;
   }, [monthDates, habits, checkins, today]);
@@ -408,6 +398,16 @@ export default function HabitTracker() {
     });
     return bestCount > 0 ? { habit: best, count: bestCount } : null;
   }, [habits, checkins, monthDates]);
+
+  const habitsByCategory = useMemo(() => {
+    const groups = {};
+    CATEGORIES.forEach((c) => (groups[c] = []));
+    habits.forEach((h) => {
+      const cat = CATEGORIES.includes(h.category) ? h.category : 'Anytime';
+      groups[cat].push(h);
+    });
+    return groups;
+  }, [habits]);
 
   // Screen Switching Logic (Now perfectly safe because all hooks have run)
   if (!user) {
@@ -434,8 +434,26 @@ export default function HabitTracker() {
   const toggleCheckin = (habitId, dKey) => {
     setData((prev) => {
       const day = prev.checkins[dKey] || {};
-      const next = { ...day, [habitId]: !day[habitId] };
-      return { ...prev, checkins: { ...prev.checkins, [dKey]: next } };
+      const current = getEntry(prev.checkins, dKey, habitId);
+      const nextStatus =
+        current.status === 'checked' ? 'skipped' :
+          current.status === 'skipped' ? 'unchecked' : 'checked';
+      const nextDay = { ...day, [habitId]: { status: nextStatus, note: current.note } };
+      return { ...prev, checkins: { ...prev.checkins, [dKey]: nextDay } };
+    });
+  };
+
+  const setCheckinNote = (habitId, dKey) => {
+    const current = getEntry(data.checkins, dKey, habitId);
+    const note = window.prompt('Note for this check-in:', current.note || '');
+    if (note === null) return; // cancelled
+    setData((prev) => {
+      const day = prev.checkins[dKey] || {};
+      const existing = getEntry(prev.checkins, dKey, habitId);
+      return {
+        ...prev,
+        checkins: { ...prev.checkins, [dKey]: { ...day, [habitId]: { ...existing, note: note.trim() } } },
+      };
     });
   };
 
@@ -444,6 +462,7 @@ export default function HabitTracker() {
     setNewName(habit.name);
     setNewIcon(habit.icon);
     setNewColor(habit.color);
+    setNewCategory(habit.category || 'Anytime');
     setShowAddForm(true);
   };
 
@@ -461,6 +480,7 @@ export default function HabitTracker() {
               name: newName.trim(),
               icon: newIcon,
               color: newColor,
+              category: newCategory // <-- YAHAN ADD HUA HAI
             }
             : h
         ),
@@ -477,6 +497,7 @@ export default function HabitTracker() {
             name: newName.trim(),
             icon: newIcon,
             color: newColor,
+            category: newCategory, // <-- YAHAN BHI ADD HUA HAI
           },
         ],
       }));
@@ -489,6 +510,7 @@ export default function HabitTracker() {
     setNewName("");
     setNewIcon("Footprints");
     setNewColor("teal");
+    setNewCategory("Anytime");   // ← add this
     setEditingHabitId(null);
     setShowAddForm(false);
   };
@@ -522,19 +544,40 @@ export default function HabitTracker() {
   const offset = circumference - (pct / 100) * circumference;
 
   const LABEL_WIDTH = 'w-32 sm:w-44';
+const currentStreak = useMemo(() => {
+    if (!habits || habits.length === 0) return 0;
+    return habits.reduce((max, h) => Math.max(max, getStreak(h.id)), 0);
+  }, [habits, checkins]);
 
-  return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-cyan-50 via-teal-50 to-amber-50 dark:from-stone-900 dark:via-stone-800 dark:to-teal-950 dark:text-stone-200 transition-colors duration-500 font-sans">
+  const habitMonthlyCount = (habitId) => {
+    let count = 0;
+    monthDates.forEach((d) => {
+      if (d > today) return; 
+      const k = dateKey(d);
+      if (getEntry(checkins, k, habitId).status === 'checked') count++;
+    });
+    return count;
+  };
+
+    <div className="print:hidden min-h-screen relative overflow-hidden bg-gradient-to-br from-cyan-50 via-teal-50 to-amber-50 dark:from-stone-900 dark:via-stone-800 dark:to-teal-950 dark:text-stone-200 transition-colors duration-500 font-sans">
       <header className="relative z-20 w-full bg-white/40 dark:bg-stone-900/40 backdrop-blur-xl border-b border-white/60 dark:border-stone-700/60 shadow-sm px-4 sm:px-6 py-3 flex justify-between items-center transition-colors">
         <span className="font-bold text-stone-700 dark:text-stone-200 tracking-wide text-sm sm:text-base">Habit Tracker</span>
 
         <div className="flex items-center gap-3">
-          {/* 👇 Dark Mode Toggle Button 👇 */}
+
           <button
             onClick={toggleTheme}
             className="p-2 rounded-full bg-white/60 dark:bg-stone-800/60 border border-white/60 dark:border-stone-700/60 shadow-sm hover:shadow-md text-stone-700 dark:text-stone-300 transition-all"
           >
             {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+          </button>
+          
+        
+          <button onClick={() => window.print()} className="flex items-center gap-1.5 text-sm font-medium text-stone-700 dark:text-stone-300 bg-white/60 dark:bg-stone-800/60 px-3 py-1.5 rounded-full border border-white/60 dark:border-stone-700/60 shadow-sm hover:shadow-md transition-all">
+            <Printer className="w-4 h-4" /> Print
+          </button>
+          <button onClick={() => exportToCSV(habits, checkins)} className="flex items-center gap-1.5 text-sm font-medium text-stone-700 dark:text-stone-300 bg-white/60 dark:bg-stone-800/60 px-3 py-1.5 rounded-full border border-white/60 dark:border-stone-700/60 shadow-sm hover:shadow-md transition-all">
+            <Download className="w-4 h-4" /> CSV
           </button>
 
           <a
@@ -790,6 +833,20 @@ export default function HabitTracker() {
                         />
                       ))}
                     </div>
+
+                    {/* YAHAN NAYA CATEGORY PICKER ADD HUA HAI */}
+                    <div className="flex gap-2">
+                      {CATEGORIES.map((cat) => (
+                        <button
+                          key={cat}
+                          onClick={() => setNewCategory(cat)}
+                          className={`text-xs font-medium px-3 py-1.5 rounded-full border ${newCategory === cat ? 'bg-teal-500 border-teal-500 text-white' : 'bg-white border-stone-200 text-stone-500'}`}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+
                     <div className="flex justify-end gap-2 pt-1">
                       <button onClick={cancelForm} className="text-sm text-stone-500 px-3 py-1.5">
                         Cancel
@@ -822,91 +879,80 @@ export default function HabitTracker() {
                   })}
                 </div>
 
-                <div className="space-y-2">
-                  <AnimatePresence>
-                    {habits.map((habit) => {
-                      const Icon = ICONS[habit.icon] || Footprints;
-                      const color = COLORS[habit.color] || COLORS.teal;
-                      const streak = getStreak(habit.id);
-                      return (
-                        <motion.div
-                          key={habit.id}
-                          layout
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: 10 }}
-                          className="flex items-center gap-1 sm:gap-2 bg-white/50 dark:bg-stone-700/40 rounded-2xl px-2 py-2 group"
-                        >
-                          <div className={`${LABEL_WIDTH} shrink-0 flex items-center gap-2 min-w-0 pr-1`}>
-                            <div className={`w-8 h-8 rounded-xl ${color.light} flex items-center justify-center shrink-0`}>
-                              <Icon className={`w-4 h-4 ${color.text}`} />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm font-medium text-stone-700 dark:text-stone-100 whitespace-normal break-words leading-tight">{habit.name}</p>
-                              {streak > 0 && (
-                                <p className="text-[10px] text-orange-500 flex items-center gap-0.5 mt-0.5">
-                                  <Flame className="w-3 h-3" /> {streak} day{streak > 1 ? 's' : ''}
-                                </p>
-                              )}
-                            </div>
-                            <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shrink-0">
-                              <button
-                                onClick={() => openEditForm(habit)}
-                                className="text-stone-300 hover:text-teal-500 transition-colors p-1"
-                              >
-                                <Edit3 className="w-3.5 h-3.5" />
-                              </button>
-                              <button
-                                onClick={() => deleteHabit(habit.id)}
-                                className="text-stone-300 hover:text-rose-400 transition-colors p-1"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </div>
-                          {weekDates.map((d, i) => {
-                            const k = dateKey(d);
-                            const checked = !!checkins[k]?.[habit.id];
-                            const isFuture = k > todayKey;
-                            return (
-                              <div key={i} className="flex-1 flex justify-center">
-                                <motion.button
-                                  disabled={isFuture}
-                                  whileTap={!isFuture ? { scale: 0.85 } : {}}
-                                  onClick={() => !isFuture && toggleCheckin(habit.id, k)}
-                                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border-2 transition-colors ${isFuture
-                                    ? 'border-stone-100 bg-stone-50/50 cursor-not-allowed opacity-50'
-                                    : checked
-                                      ? `${color.solid} border-transparent`
-                                      : 'border-stone-200 dark:border-stone-600 bg-white dark:bg-stone-800 hover:border-stone-300 cursor-pointer'
-                                    }`}
+                
+              <div className="space-y-4">
+                  {CATEGORIES.map((cat) => {
+                    const catHabits = habitsByCategory[cat];
+                    if (!catHabits || catHabits.length === 0) return null;
+                    return (
+                      <div key={cat}>
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-400 mb-1.5 px-1">{cat}</p>
+                        <div className="space-y-2">
+                          <AnimatePresence>
+                            {catHabits.map((habit) => {
+                              const Icon = ICONS[habit.icon] || Footprints;
+                              const color = COLORS[habit.color] || COLORS.teal;
+                              const streak = getStreak(habit.id);
+                              return (
+                                <motion.div
+                                  key={habit.id}
+                                  layout
+                                  initial={{ opacity: 0, x: -10 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  exit={{ opacity: 0, x: 10 }}
+                                  className="flex items-center gap-1 sm:gap-2 bg-white/50 dark:bg-stone-700/40 rounded-2xl px-2 py-2 group"
                                 >
-                                  <AnimatePresence>
-                                    {checked && (
-                                      <motion.div
-                                        initial={{ scale: 0, rotate: -45 }}
-                                        animate={{ scale: 1, rotate: 0 }}
-                                        exit={{ scale: 0 }}
-                                        transition={{ type: 'spring', stiffness: 500, damping: 15 }}
-                                      >
-                                        <Check className="w-4 h-4 text-white" strokeWidth={3} />
-                                      </motion.div>
-                                    )}
-                                  </AnimatePresence>
-                                </motion.button>
-                              </div>
-                            );
-                          })}
-                        </motion.div>
-                      );
-                    })}
-                  </AnimatePresence>
+                                  <div className={`${LABEL_WIDTH} shrink-0 flex items-center gap-2 min-w-0 pr-1`}>
+                                    <div className={`w-8 h-8 rounded-xl ${color.light} flex items-center justify-center shrink-0`}>
+                                      <Icon className={`w-4 h-4 ${color.text}`} />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <p className="text-sm font-medium text-stone-700 dark:text-stone-100 whitespace-normal break-words leading-tight">{habit.name}</p>
+                                      {streak > 0 && (
+                                        <p className="text-[10px] text-orange-500 flex items-center gap-0.5 mt-0.5">
+                                          <Flame className="w-3 h-3" /> {streak} day{streak > 1 ? 's' : ''}
+                                        </p>
+                                      )}
+                                    </div>
+                                    <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shrink-0">
+                                      <button onClick={() => openEditForm(habit)} className="text-stone-300 hover:text-teal-500 transition-colors p-1">
+                                        <Edit3 className="w-3.5 h-3.5" />
+                                      </button>
+                                      <button onClick={() => deleteHabit(habit.id)} className="text-stone-300 hover:text-rose-400 transition-colors p-1">
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
+                                  </div>
+                                  {weekDates.map((d, i) => {
+                                    const k = dateKey(d);
+                                    const entry = getEntry(checkins, k, habit.id);
+                                    const isFuture = k > todayKey;
+                                    return (
+                                      <div key={i} className="flex-1 flex justify-center">
+                                        <CheckinCell
+                                          status={entry.status}
+                                          note={entry.note}
+                                          color={color}
+                                          isFuture={isFuture}
+                                          onToggle={() => toggleCheckin(habit.id, k)}
+                                          onNote={() => setCheckinNote(habit.id, k)}
+                                        />
+                                      </div>
+                                    );
+                                  })}
+                                </motion.div>
+                              );
+                            })}
+                          </AnimatePresence>
+                        </div>
+                      </div>
+                    );
+                  })}
                   {habits.length === 0 && (
                     <p className="text-center text-sm text-stone-400 py-6">No habits yet — add one to get started 🌱</p>
                   )}
                 </div>
-              </>
-            )}
+            
 
             {viewMode === 'monthly' && (
               <div>
@@ -928,43 +974,52 @@ export default function HabitTracker() {
                       })}
                     </div>
 
-                    <div className="space-y-2">
-                      {habits.map((habit) => {
-                        const Icon = ICONS[habit.icon] || Footprints;
-                        const color = COLORS[habit.color] || COLORS.teal;
-                        const count = habitMonthlyCount(habit.id);
-                        const habitPct = monthTotalDays === 0 ? 0 : Math.round((count / monthTotalDays) * 100);
+<div className="space-y-4">
+                      {CATEGORIES.map((cat) => {
+                        const catHabits = habitsByCategory[cat];
+                        if (!catHabits || catHabits.length === 0) return null;
                         return (
-                          <div key={habit.id} className="flex items-center gap-1 bg-white/50 dark:bg-stone-700/40 rounded-2xl px-2 py-2">
-                            <div className={`${LABEL_WIDTH} shrink-0 flex items-center gap-2 min-w-0 pr-1`}>
-                              <div className={`w-8 h-8 rounded-xl ${color.light} flex items-center justify-center shrink-0`}>
-                                <Icon className={`w-4 h-4 ${color.text}`} />
-                              </div>
-                              <div className="min-w-0">
-                                <p className="text-sm font-medium text-stone-700 dark:text-stone-100 truncate">{habit.name}</p>
-                                <p className="text-[10px] text-stone-400">{count}/{monthTotalDays} · {habitPct}%</p>
-                              </div>
+                          <div key={cat}>
+                            <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-400 mb-1 px-1">{cat}</p>
+                            <div className="space-y-2">
+                              {catHabits.map((habit) => {
+                                const Icon = ICONS[habit.icon] || Footprints;
+                                const color = COLORS[habit.color] || COLORS.teal;
+                                const count = habitMonthlyCount(habit.id);
+                                const habitPct = monthTotalDays === 0 ? 0 : Math.round((count / monthTotalDays) * 100);
+                                return (
+                                  <div key={habit.id} className="flex items-center gap-1 bg-white/50 dark:bg-stone-700/40 rounded-2xl px-2 py-2">
+                                    <div className={`${LABEL_WIDTH} shrink-0 flex items-center gap-2 min-w-0 pr-1`}>
+                                      <div className={`w-8 h-8 rounded-xl ${color.light} flex items-center justify-center shrink-0`}>
+                                        <Icon className={`w-4 h-4 ${color.text}`} />
+                                      </div>
+                                      <div className="min-w-0">
+                                        <p className="text-sm font-medium text-stone-700 dark:text-stone-100 truncate">{habit.name}</p>
+                                        <p className="text-[10px] text-stone-400">{count}/{monthTotalDays} · {habitPct}%</p>
+                                      </div>
+                                    </div>
+                                    {monthDates.map((d) => {
+                                      const k = dateKey(d);
+                                      const entry = getEntry(checkins, k, habit.id);
+                                      const isFuture = k > todayKey;
+                                      return (
+                                        <CheckinCell
+                                          key={k}
+                                          status={entry.status}
+                                          note={entry.note}
+                                          color={color}
+                                          isFuture={isFuture}
+                                          size="sm"
+                                          shape="square"
+                                          onToggle={() => toggleCheckin(habit.id, k)}
+                                          onNote={() => setCheckinNote(habit.id, k)}
+                                        />
+                                      );
+                                    })}
+                                  </div>
+                                );
+                              })}
                             </div>
-                            {monthDates.map((d) => {
-                              const k = dateKey(d);
-                              const checked = !!checkins[k]?.[habit.id];
-                              const isFuture = k > todayKey;
-                              return (
-                                <button
-                                  key={k}
-                                  disabled={isFuture}
-                                  onClick={() => !isFuture && toggleCheckin(habit.id, k)}
-                                  className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 transition-colors ${isFuture
-                                    ? 'bg-stone-50/50 cursor-not-allowed opacity-40'
-                                    : checked
-                                      ? `${color.solid}`
-                                      : 'bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 dark:text-white hover:border-stone-300 cursor-pointer'
-                                    }`}
-                                >
-                                  {checked && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
-                                </button>
-                              );
-                            })}
                           </div>
                         );
                       })}
@@ -972,8 +1027,6 @@ export default function HabitTracker() {
                         <p className="text-center text-sm text-stone-400 py-6">No habits yet — add one to get started 🌱</p>
                       )}
                     </div>
-                  </div>
-                </div>
 
                 {habits.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-stone-200/60 text-xs">
@@ -991,10 +1044,12 @@ export default function HabitTracker() {
                   </div>
                 )}
               </div>
-            )}
+            }
           </div>
         </div>
-      </motion.div>
+</motion.div>
     </div>
+    <PrintView habits={habits} checkins={checkins} year={year} month={month} />
+    </>
   );
 }
