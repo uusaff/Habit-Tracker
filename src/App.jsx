@@ -7,7 +7,8 @@ import {
   Footprints, BookOpen, Moon, Leaf, Dumbbell, Droplet, Brain, Heart,
   Music, Camera, Coffee, PenLine, Plus, Trash2, Check,
   Quote as QuoteIcon, Flame, TrendingUp,
-  User, Calendar, Edit3, X, Award, Target, Sun
+  User, Calendar, Edit3, X, Award, Target, Sun,
+  Printer, Download, Minus
 } from 'lucide-react';
 
 const STORAGE_KEY = 'tropical-habit-tracker-v1';
@@ -26,6 +27,8 @@ const COLORS = {
 };
 const COLOR_KEYS = Object.keys(COLORS);
 
+const CATEGORIES = ['Morning', 'Anytime', 'Evening'];
+
 const QUOTES = [
   'Discipline is choosing between what you want now and what you want most.',
   'Small daily improvements lead to staggering long-term results.',
@@ -40,10 +43,10 @@ const QUOTES = [
 ];
 
 const DEFAULT_HABITS = [
-  { id: 'h1', name: 'Daily Steps', icon: 'Footprints', color: 'teal' },
-  { id: 'h2', name: 'Research Hours', icon: 'BookOpen', color: 'orange' },
-  { id: 'h3', name: 'Sleep Tracking', icon: 'Moon', color: 'sky' },
-  { id: 'h4', name: 'Nature Exposure', icon: 'Leaf', color: 'green' },
+  { id: 'h1', name: 'Daily Steps', icon: 'Footprints', color: 'teal', category: 'Anytime' },
+  { id: 'h2', name: 'Research Hours', icon: 'BookOpen', color: 'orange', category: 'Morning' },
+  { id: 'h3', name: 'Sleep Tracking', icon: 'Moon', color: 'sky', category: 'Evening' },
+  { id: 'h4', name: 'Nature Exposure', icon: 'Leaf', color: 'green', category: 'Anytime' },
 ];
 
 const DEFAULT_DATA = { habits: DEFAULT_HABITS, checkins: {} };
@@ -77,21 +80,55 @@ function getMonthDates(year, month) {
   return Array.from({ length: total }, (_, i) => new Date(year, month, i + 1));
 }
 
+
+function getEntry(checkins, dKey, habitId) {
+  const v = checkins[dKey]?.[habitId];
+  if (!v) return { status: 'unchecked', note: '' };
+  if (v === true) return { status: 'checked', note: '' };
+  return { status: v.status || 'unchecked', note: v.note || '' };
+}
+
 function getLongestStreak(habitId, checkins) {
-  const dates = Object.keys(checkins)
-    .filter((k) => checkins[k]?.[habitId])
-    .sort();
-  if (dates.length === 0) return 0;
-  let longest = 1;
-  let current = 1;
-  for (let i = 1; i < dates.length; i++) {
-    const prev = new Date(dates[i - 1]);
-    const curr = new Date(dates[i]);
-    const diffDays = Math.round((curr - prev) / 86400000);
-    current = diffDays === 1 ? current + 1 : 1;
-    longest = Math.max(longest, current);
+  const keys = Object.keys(checkins);
+  if (keys.length === 0) return 0;
+  const start = new Date(keys.sort()[0]);
+  const end = new Date();
+  let longest = 0, current = 0;
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    const entry = getEntry(checkins, dateKey(d), habitId);
+    if (entry.status === 'checked') {
+      current++;
+      longest = Math.max(longest, current);
+    } else if (entry.status !== 'skipped') {
+      current = 0; 
+    }
   }
   return longest;
+}
+
+function exportToCSV(habits, checkins) {
+  const dates = Object.keys(checkins).sort();
+  const headers = ['Date', ...habits.map((h) => h.name)];
+  const rows = dates.map((dK) => {
+    const row = [dK];
+    habits.forEach((h) => {
+      const entry = getEntry(checkins, dK, h.id);
+      row.push(entry.status === 'unchecked' ? '' : entry.status);
+    });
+    return row;
+  });
+  const csv = [headers, ...rows]
+    .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(','))
+    .join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `habit-tracker-${dateKey(new Date())}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 
 function useTrackerStorage() {
@@ -165,6 +202,82 @@ function StatCard({ icon: Icon, label, value, color }) {
         <p className="text-[11px] text-stone-500 dark:text-stone-400 truncate">{label}</p>
       </div>
     </motion.div>
+  );
+}
+
+function CheckinCell({ status, note, color, isFuture, size = 'lg', shape = 'circle', onToggle, onNote }) {
+  const timerRef = useRef(null);
+  const longPressed = useRef(false);
+
+  const start = () => {
+    longPressed.current = false;
+    timerRef.current = setTimeout(() => { longPressed.current = true; onNote(); }, 550);
+  };
+  const cancel = () => clearTimeout(timerRef.current);
+  const handleClick = () => {
+    if (longPressed.current) { longPressed.current = false; return; }
+    onToggle();
+  };
+
+  const dim = size === 'lg' ? 'w-7 h-7 sm:w-8 sm:h-8' : 'w-6 h-6';
+  const radius = shape === 'circle' ? 'rounded-full' : 'rounded-md';
+
+  let visual = 'border-2 border-stone-200 dark:border-stone-600 bg-white dark:bg-stone-800 hover:border-stone-300';
+  if (isFuture) visual = 'border-2 border-stone-100 bg-stone-50/50 opacity-50 cursor-not-allowed';
+  else if (status === 'checked') visual = `${color.solid} border-transparent`;
+  else if (status === 'skipped') visual = 'border-2 border-dashed border-stone-300 bg-stone-100 dark:bg-stone-700';
+
+  return (
+    <button
+      disabled={isFuture}
+      onClick={handleClick}
+      onContextMenu={(e) => { if (!isFuture) { e.preventDefault(); onNote(); } }}
+      onMouseDown={!isFuture ? start : undefined}
+      onMouseUp={!isFuture ? cancel : undefined}
+      onMouseLeave={!isFuture ? cancel : undefined}
+      onTouchStart={!isFuture ? start : undefined}
+      onTouchEnd={!isFuture ? cancel : undefined}
+      title={note || ''}
+      className={`relative ${dim} ${radius} flex items-center justify-center transition-colors ${visual} ${!isFuture ? 'cursor-pointer' : ''}`}
+    >
+      {status === 'checked' && <Check className="w-4 h-4 text-white" strokeWidth={3} />}
+      {status === 'skipped' && <Minus className="w-3.5 h-3.5 text-stone-400" strokeWidth={3} />}
+      {note && <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-400 border border-white" />}
+    </button>
+  );
+}
+
+function PrintView({ habits, checkins, year, month }) {
+  const dates = getMonthDates(year, month);
+  const monthName = new Date(year, month, 1).toLocaleString('default', { month: 'long' });
+  return (
+    <div className="hidden print:block p-4 text-black">
+      <style>{`@media print { @page { size: A4 landscape; margin: 10mm; } }`}</style>
+      <h1 className="text-lg font-bold mb-1">Habit Tracker — {monthName} {year}</h1>
+      <p className="text-xs mb-3">✓ = Done · – = Skipped · blank = missed</p>
+      <table className="w-full border-collapse text-[9px]">
+        <thead>
+          <tr>
+            <th className="border border-black px-1 py-0.5 text-left">Habit</th>
+            {dates.map((d) => (
+              <th key={d.getDate()} className="border border-black px-0.5 py-0.5 w-5">{d.getDate()}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {habits.map((h) => (
+            <tr key={h.id}>
+              <td className="border border-black px-1 py-0.5 font-medium whitespace-nowrap">{h.name}</td>
+              {dates.map((d) => {
+                const entry = getEntry(checkins, dateKey(d), h.id);
+                const mark = entry.status === 'checked' ? '✓' : entry.status === 'skipped' ? '–' : '';
+                return <td key={dateKey(d)} className="border border-black text-center">{mark}</td>;
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
