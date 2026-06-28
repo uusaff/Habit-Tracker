@@ -272,12 +272,14 @@ function PrintView({ habits, year, month }) {
             <th className="border-[1.5px] border-gray-500 bg-gray-100 px-1 py-2 text-center font-bold text-[10px] w-12">
               Date
             </th>
-            {/* Habits Header */}
+            {/* Habits Header Fixed */}
             {habits.map((h) => (
-              <th key={h.id} className="border-[1.5px] border-gray-500 bg-gray-100 px-1 py-1 text-center font-bold text-[9px] leading-tight align-bottom pb-2">
-                <span className="block -rotate-90 origin-bottom whitespace-nowrap mb-6 h-20 text-left overflow-hidden">
-                  {h.name}
-                </span>
+              <th key={h.id} className="border-[1.5px] border-gray-500 bg-gray-100 px-1 py-2 text-center font-bold text-[10px] leading-tight align-bottom">
+                <div className="flex justify-center items-end h-28 pb-1">
+                  <span className="[writing-mode:vertical-rl] rotate-180 whitespace-nowrap tracking-wide">
+                    {h.name}
+                  </span>
+                </div>
               </th>
             ))}
             {/* Extra Blank Headers */}
