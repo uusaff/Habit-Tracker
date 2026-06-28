@@ -359,7 +359,6 @@ export default function HabitTracker() {
   const [pWeight, setPWeight] = useState('');
   const [pHeight, setPHeight] = useState('');
   const [viewMode, setViewMode] = useState('weekly');
-  const [user, setUser] = useState(null);
 
   const [showPrintModal, setShowPrintModal] = useState(false);
   const [selectedPrintMonth, setSelectedPrintMonth] = useState(() => new Date().getMonth());
