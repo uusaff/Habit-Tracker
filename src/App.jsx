@@ -31,16 +31,32 @@ const COLOR_KEYS = Object.keys(COLORS);
 const CATEGORIES = ['Morning', 'Anytime', 'Evening'];
 
 const QUOTES = [
-  'Discipline is choosing between what you want now and what you want most.',
-  'Small daily improvements lead to staggering long-term results.',
-  'Motivation gets you started. Discipline keeps you going.',
-  "You don't have to be extreme, just consistent.",
-  'The pain of discipline weighs ounces; the pain of regret weighs tons.',
-  'Habits are the compound interest of self-improvement.',
-  'Do something today that your future self will thank you for.',
-  'Success is the sum of small efforts repeated daily.',
-  'Discipline is the bridge between goals and accomplishment.',
-  'Every action you take is a vote for the person you wish to become.',
+  { text: "We are what we repeatedly do. Excellence, then, is not an act but a habit.", author: "Aristotle" },
+  { text: "Successful people are simply those with successful habits.", author: "Brian Tracy" },
+  { text: "Motivation is what gets you started. Habit is what keeps you going.", author: "Jim Ryun" },
+  { text: "Chains of habit are too weak to be felt until they are too strong to be broken.", author: "Samuel Johnson" },
+  { text: "Good habits formed at youth make all the difference.", author: "Aristotle" },
+  { text: "Discipline is choosing between what you want now and what you want most.", author: "Abraham Lincoln" },
+  { text: "The pain of discipline weighs ounces. The pain of regret weighs tons.", author: "Jim Rohn" },
+  { text: "Discipline equals freedom.", author: "Jocko Willink" },
+  { text: "We must all suffer one of two things: the pain of discipline or the pain of regret.", author: "Jim Rohn" },
+  { text: "The successful person has the habit of doing the things failures don't like to do.", author: "Albert E. N. Gray" },
+  { text: "Rule your mind or it will rule you.", author: "Horace" },
+  { text: "Self-discipline is the bridge between goals and accomplishment.", author: "Jim Rohn" },
+  { text: "It's not what we do once in a while that shapes our lives. It's what we do consistently.", author: "Tony Robbins" },
+  { text: "Small disciplines repeated with consistency every day lead to great achievements.", author: "John C. Maxwell" },
+  { text: "Success doesn't come from what you do occasionally. It comes from what you do consistently.", author: "Marie Forleo" },
+  { text: "Consistency is harder when no one is clapping for you. You must clap for yourself during those times.", author: "Yousaf" },
+  { text: "Discipline is choosing between what you want now and what you want most.", author: "Abraham Lincoln" },
+  { text: "Small daily improvements lead to staggering long-term results.", author: "John C. Maxwell" },
+  { text: "Motivation gets you started. Discipline keeps you going.", author: "Yousaf" },
+  { text: "You don't have to be extreme, just consistent.", author: "Trump" },
+  { text: "The pain of discipline weighs ounces; the pain of regret weighs tons.", author: "Jim Rohn" },
+  { text:'Habits are the compound interest of self-improvement.', author: "Brian John" },
+  { text:'Do something today that your future self will thank you for.', author: "Jim Rohn" },
+  { text:'Success is the sum of small efforts repeated daily.', author: "Aristotle" },
+  { text:'Discipline is the bridge between goals and accomplishment.', author: "Yousaf" },
+  { text:'Every action you take is a vote for the person you wish to become.', author: "Yousaf" },
 ];
 
 const DEFAULT_HABITS = [
@@ -899,16 +915,21 @@ export default function HabitTracker() {
           <div className="bg-white/40 dark:bg-slate-800/30 backdrop-blur-xl border border-white/60 dark:border-white/10 rounded-3xl shadow-lg shadow-orange-100/50 dark:shadow-black/40 p-5 sm:p-6 mb-6 flex items-start gap-3">
             <QuoteIcon className="w-5 h-5 text-orange-400 shrink-0 mt-1" />
             <AnimatePresence mode="wait">
-              <motion.p
+              <motion.div
                 key={quoteIndex}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.5 }}
-                className="text-stone-700 dark:text-stone-200 italic font-medium leading-relaxed"
+                className="flex flex-col"
               >
-                "{QUOTES[quoteIndex]}"
-              </motion.p>
+                <p className="text-stone-700 dark:text-stone-200 italic font-medium leading-relaxed">
+                  "{QUOTES[quoteIndex].text}"
+                </p>
+                <p className="text-sm text-stone-900 dark:text-white font-extrabold mt-2 tracking-wide">
+                  — {QUOTES[quoteIndex].author}
+                </p>
+              </motion.div>
             </AnimatePresence>
           </div>
 
