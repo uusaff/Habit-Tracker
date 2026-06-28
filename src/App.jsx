@@ -64,14 +64,18 @@ function startOfWeek(d) {
   return date;
 }
 function getWeekDates() {
-  const start = startOfWeek(new Date());
-  return Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(start);
-    d.setDate(start.getDate() + i);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+
+  return Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(today);
+    d.setDate(today.getDate() - 2 + i);
     return d;
   });
 }
-const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
 
 function daysInMonth(year, month) {
   return new Date(year, month + 1, 0).getDate();
@@ -153,16 +157,21 @@ function StatCard({ icon: Icon, label, value, color }) {
   );
 }
 
-function CheckinCell({ status, note, color, isFuture, size = 'lg', shape = 'circle', onToggle, onNote }) {
+function CheckinCell({ status, note, color, isFuture, isLocked, size = 'lg', shape = 'circle', onToggle, onNote }) {
   const timerRef = useRef(null);
   const longPressed = useRef(false);
 
+
+  const disabled = isFuture || isLocked;
+
   const start = () => {
+    if (disabled) return;
     longPressed.current = false;
     timerRef.current = setTimeout(() => { longPressed.current = true; onNote(); }, 550);
   };
   const cancel = () => clearTimeout(timerRef.current);
   const handleClick = () => {
+    if (disabled) return;
     if (longPressed.current) { longPressed.current = false; return; }
     onToggle();
   };
@@ -170,23 +179,33 @@ function CheckinCell({ status, note, color, isFuture, size = 'lg', shape = 'circ
   const dim = size === 'lg' ? 'w-7 h-7 sm:w-8 sm:h-8' : 'w-6 h-6';
   const radius = shape === 'circle' ? 'rounded-full' : 'rounded-md';
 
-  let visual = 'border-2 border-stone-200 dark:border-stone-600 bg-white dark:bg-stone-800 hover:border-stone-300';
-  if (isFuture) visual = 'border-2 border-stone-100 bg-stone-50/50 opacity-50 cursor-not-allowed';
-  else if (status === 'checked') visual = `${color.solid} border-transparent`;
-  else if (status === 'skipped') visual = 'border-2 border-dashed border-stone-300 bg-stone-100 dark:bg-stone-700';
+  let visual = 'border-2 border-stone-200 dark:border-stone-600 bg-white dark:bg-stone-800';
+  if (!disabled) visual += ' hover:border-stone-300 cursor-pointer';
+  else visual += ' cursor-not-allowed';
+
+  // Styling taake locked habits ka color kharab na ho
+  if (status === 'checked') {
+    visual = `${color.solid} border-transparent ${disabled ? 'opacity-80' : ''}`;
+  } else if (status === 'skipped') {
+    visual = `border-2 border-dashed border-stone-300 bg-stone-100 dark:bg-stone-700 ${disabled ? 'opacity-80' : ''}`;
+  } else if (isFuture) {
+    visual = 'border-2 border-stone-100 bg-stone-50/50 dark:bg-stone-800/50 opacity-40';
+  } else if (disabled) {
+    visual += ' opacity-50'; // Past unchecked
+  }
 
   return (
     <button
-      disabled={isFuture}
+      disabled={disabled}
       onClick={handleClick}
-      onContextMenu={(e) => { if (!isFuture) { e.preventDefault(); onNote(); } }}
-      onMouseDown={!isFuture ? start : undefined}
-      onMouseUp={!isFuture ? cancel : undefined}
-      onMouseLeave={!isFuture ? cancel : undefined}
-      onTouchStart={!isFuture ? start : undefined}
-      onTouchEnd={!isFuture ? cancel : undefined}
+      onContextMenu={(e) => { if (!disabled) { e.preventDefault(); onNote(); } }}
+      onMouseDown={start}
+      onMouseUp={cancel}
+      onMouseLeave={cancel}
+      onTouchStart={start}
+      onTouchEnd={cancel}
       title={note || ''}
-      className={`relative ${dim} ${radius} flex items-center justify-center transition-colors ${visual} ${!isFuture ? 'cursor-pointer' : ''}`}
+      className={`relative ${dim} ${radius} flex items-center justify-center transition-colors ${visual}`}
     >
       {status === 'checked' && <Check className="w-4 h-4 text-white" strokeWidth={3} />}
       {status === 'skipped' && <Minus className="w-3.5 h-3.5 text-stone-400" strokeWidth={3} />}
@@ -289,13 +308,13 @@ function PrintView({ habits, year, month }) {
 }
 
 export default function HabitTracker() {
- 
+
   const [data, setData] = useState(null);
   const [profile, setProfile] = useState(null);
-  
+
   const [user, setUser] = useState(null);
 
- 
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -303,44 +322,44 @@ export default function HabitTracker() {
     return () => unsubscribe();
   }, []);
 
-  
+
   useEffect(() => {
     if (!user) return;
-    
+
     const fetchUserData = async () => {
       const docRef = doc(db, 'users', user.uid);
       const docSnap = await getDoc(docRef);
-      
+
       if (docSnap.exists()) {
-        
+
         const dbData = docSnap.data();
         setData(dbData.trackerData || DEFAULT_DATA);
         setProfile(dbData.profileData || DEFAULT_PROFILE);
       } else {
-        
+
         setData(DEFAULT_DATA);
         setProfile(DEFAULT_PROFILE);
       }
     };
-    
+
     fetchUserData();
   }, [user]);
 
-  
+
   useEffect(() => {
-   
+
     if (!user || !data || !profile) return;
-    
+
     const saveUserData = async () => {
       const docRef = doc(db, 'users', user.uid);
       await setDoc(docRef, {
         trackerData: data,
         profileData: profile
-      }, { merge: true }); 
+      }, { merge: true });
     };
-    
+
     saveUserData();
-  }, [data, profile, user]); 
+  }, [data, profile, user]);
 
   const [quoteIndex, setQuoteIndex] = useState(0);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -501,7 +520,7 @@ export default function HabitTracker() {
     return <LoginScreen />;
   }
 
-  if (user.email === 'uussaff@gmail.com') { 
+  if (user.email === 'uussaff@gmail.com') {
     return <AdminDashboard handleSignOut={() => signOut(auth)} />;
   }
 
@@ -634,7 +653,7 @@ export default function HabitTracker() {
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (pct / 100) * circumference;
 
-  const LABEL_WIDTH = 'w-32 sm:w-44';
+  const LABEL_WIDTH = 'w-24 sm:w-44';
 
 
 
@@ -674,11 +693,11 @@ export default function HabitTracker() {
               <Download className="w-4 h-4" /> CSV
             </button>
 
-             <button 
-              onClick={() => signOut(auth)} 
+            <button
+              onClick={() => signOut(auth)}
               className="flex items-center gap-1.5 text-sm font-medium text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/30 px-3 py-1.5 rounded-full border border-rose-200 dark:border-rose-800 shadow-sm hover:shadow-md transition-all"
             >
-               Logout
+              Logout
             </button>
             <a
               href="https://github.com/uusaff"
@@ -1027,7 +1046,7 @@ export default function HabitTracker() {
                       return (
                         <div key={i} className="flex-1 text-center">
                           <div className={`text-[10px] sm:text-xs font-medium ${isToday ? 'text-teal-600' : 'text-stone-400'}`}>
-                            {DAY_LABELS[i]}
+                            {dayNames[d.getDay()]}
                           </div>
                           <div className={`text-[10px] sm:text-xs ${isToday ? 'text-teal-600 font-bold' : 'text-stone-400'}`}>
                             {d.getDate()}
@@ -1085,6 +1104,8 @@ export default function HabitTracker() {
                                       const k = dateKey(d);
                                       const entry = getEntry(checkins, k, habit.id);
                                       const isFuture = k > todayKey;
+                                      const isLocked = k !== todayKey; 
+
                                       return (
                                         <div key={i} className="flex-1 flex justify-center">
                                           <CheckinCell
@@ -1092,6 +1113,7 @@ export default function HabitTracker() {
                                             note={entry.note}
                                             color={color}
                                             isFuture={isFuture}
+                                            isLocked={isLocked} 
                                             onToggle={() => toggleCheckin(habit.id, k)}
                                             onNote={() => setCheckinNote(habit.id, k)}
                                           />
@@ -1162,6 +1184,7 @@ export default function HabitTracker() {
                                         const k = dateKey(d);
                                         const entry = getEntry(checkins, k, habit.id);
                                         const isFuture = k > todayKey;
+                                        const isLocked = k !== todayKey;
                                         return (
                                           <CheckinCell
                                             key={k}
@@ -1169,6 +1192,7 @@ export default function HabitTracker() {
                                             note={entry.note}
                                             color={color}
                                             isFuture={isFuture}
+                                            isLocked={isLocked}
                                             size="sm"
                                             shape="square"
                                             onToggle={() => toggleCheckin(habit.id, k)}
@@ -1255,7 +1279,7 @@ function AdminDashboard({ handleSignOut }) {
           <h2 className="text-xl font-semibold mb-4">Total Users: {allUsers.length}</h2>
           {allUsers.map((u, i) => (
             <div key={u.id} className="border-b py-3 flex justify-between">
-              <span className="font-medium text-stone-700">{u.profileData?.name || `User ${i+1}`}</span>
+              <span className="font-medium text-stone-700">{u.profileData?.name || `User ${i + 1}`}</span>
               <span className="text-stone-500">Habits Tracked: {u.trackerData?.habits?.length || 0}</span>
             </div>
           ))}
