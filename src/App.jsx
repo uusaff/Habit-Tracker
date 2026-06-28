@@ -242,41 +242,40 @@ function PrintView({ habits, year, month }) {
 
   return (
     <div className="hidden print:block text-black bg-white" style={{ margin: 0, padding: 0 }}>
-      {/* Print ke liye khaas CSS jisme humne layout ko zayada spread kiya hai */}
+      {/* Print ke liye khaas CSS jisme humne layout ko zayada spread kiya hai aur margins shrink kiye hain */}
       <style>{`
         @media print { 
-          @page { size: A4 portrait; margin: 10mm; }
+          @page { size: A4 portrait; margin: 8mm; }
           body { -webkit-print-color-adjust: exact; print-color-adjust: exact; margin: 0; padding: 0;}
-          /* Table ko poori screen pe force karne ke liye fixed layout */
           table { table-layout: fixed; width: 100%; }
           th { word-wrap: break-word; overflow-wrap: break-word; }
         }
       `}</style>
 
       {/* 👑 CUSTOM HEADER 👑 */}
-      <div className="flex justify-between items-end mb-4 border-b-2 border-black pb-2">
+      <div className="flex justify-between items-end mb-2 border-b-2 border-black pb-1">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight uppercase">Habit Tracker</h1>
-          <h2 className="text-lg font-bold text-gray-700">{monthName} {year}</h2>
+          <h1 className="text-2xl font-extrabold tracking-tight uppercase leading-none">Habit Tracker</h1>
+          <h2 className="text-base font-bold text-gray-700 mt-1">{monthName} {year}</h2>
         </div>
         <div className="text-right">
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-0.5">A personal project by</p>
-          <p className="text-sm font-bold text-black uppercase">M Yousaf</p>
-          <p className="text-[10px] text-gray-500 font-mono mt-0.5">github.com/uusaff</p>
+          <p className="text-[10px] font-medium text-gray-500 uppercase tracking-widest mb-0.5">A personal project by</p>
+          <p className="text-xs font-bold text-black uppercase">M Yousaf</p>
+          <p className="text-[9px] text-gray-500 font-mono mt-0.5">github.com/uusaff</p>
         </div>
       </div>
 
       <table className="w-full border-collapse">
         <thead>
           <tr>
-            <th className="border-[1.5px] border-gray-500 bg-gray-100 px-1 py-2 text-center font-bold text-[10px] w-12">
+            <th className="border-[1.5px] border-gray-500 bg-gray-100 px-1 py-1 text-center font-bold text-[10px] w-12">
               Date
             </th>
-            {/* Habits Header Fixed */}
+            {/* Habits Header Fixed for Horizontal Wrapping */}
             {habits.map((h) => (
-              <th key={h.id} className="border-[1.5px] border-gray-500 bg-gray-100 px-1 py-2 text-center font-bold text-[10px] leading-tight align-bottom">
-                <div className="flex justify-center items-end h-28 pb-1">
-                  <span className="[writing-mode:vertical-rl] rotate-180 whitespace-nowrap tracking-wide">
+              <th key={h.id} className="border-[1.5px] border-gray-500 bg-gray-100 px-1 py-1 text-center font-bold text-[10px] leading-tight">
+                <div className="flex justify-center items-center h-10 w-full overflow-hidden">
+                  <span className="whitespace-normal leading-tight text-center">
                     {h.name}
                   </span>
                 </div>
@@ -284,8 +283,7 @@ function PrintView({ habits, year, month }) {
             ))}
             {/* Extra Blank Headers */}
             {blankColumns.map((_, i) => (
-              <th key={`blank-head-${i}`} className="border-[1.5px] border-gray-500 bg-gray-100 px-1 py-2 text-center text-gray-400 font-medium text-[9px]">
-
+              <th key={`blank-head-${i}`} className="border-[1.5px] border-gray-500 bg-gray-100 px-1 py-1 text-center text-gray-400 font-medium text-[9px]">
               </th>
             ))}
           </tr>
@@ -295,20 +293,20 @@ function PrintView({ habits, year, month }) {
             const isWeekend = d.getDay() === 0 || d.getDay() === 6; // Sunday or Saturday
             return (
               <tr key={d.getDate()} className={isWeekend ? "bg-gray-50" : ""}>
-                {/* Date Column */}
-                <td className="border-[1.5px] border-gray-500 px-1 py-1 text-center whitespace-nowrap">
-                  <span className="font-bold text-[11px]">{pad(d.getDate())}</span>
-                  <span className="text-gray-500 text-[9px] ml-1 uppercase">{dayNames[d.getDay()]}</span>
+                {/* Date Column - Height reduced */}
+                <td className="border-[1.5px] border-gray-500 px-1 py-[3px] text-center whitespace-nowrap h-[20px]">
+                  <span className="font-bold text-[10px]">{pad(d.getDate())}</span>
+                  <span className="text-gray-500 text-[8px] ml-1 uppercase">{dayNames[d.getDay()]}</span>
                 </td>
 
-                {/* Empty Boxes for Habits */}
+                {/* Empty Boxes for Habits - Height reduced */}
                 {habits.map((h) => (
-                  <td key={h.id} className="border-[1.5px] border-gray-500 text-center h-6"></td>
+                  <td key={h.id} className="border-[1.5px] border-gray-500 text-center h-[20px]"></td>
                 ))}
 
-                {/* Extra Blank Boxes */}
+                {/* Extra Blank Boxes - Height reduced */}
                 {blankColumns.map((_, i) => (
-                  <td key={`blank-body-${i}-${d.getDate()}`} className="border-[1.5px] border-gray-500 text-center h-6"></td>
+                  <td key={`blank-body-${i}-${d.getDate()}`} className="border-[1.5px] border-gray-500 text-center h-[20px]"></td>
                 ))}
               </tr>
             );
@@ -317,7 +315,7 @@ function PrintView({ habits, year, month }) {
       </table>
 
       {/* 👑 COPYRIGHT FOOTER 👑 */}
-      <div className="mt-4 pt-2 border-t border-gray-300 flex justify-between items-center text-[9px] text-gray-500">
+      <div className="mt-2 pt-1 border-t border-gray-300 flex justify-between items-center text-[8px] text-gray-500">
         <p>© {new Date().getFullYear()} M Yousaf. All Rights Reserved.</p>
         <p>® Trademark Registered</p>
       </div>
