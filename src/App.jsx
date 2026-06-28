@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from './firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { collection, getDocs } from 'firebase/firestore';
+import { auth, db } from './firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore'; 
 import LoginScreen from './Login';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -131,59 +135,6 @@ function exportToCSV(habits, checkins) {
   URL.revokeObjectURL(url);
 }
 
-function useTrackerStorage() {
-  const [data, setData] = useState(null);
-  const loadedRef = useRef(false);
-
-  useEffect(() => {
-    try {
-      const res = localStorage.getItem(STORAGE_KEY);
-      setData(res ? JSON.parse(res) : DEFAULT_DATA);
-    } catch (e) {
-      setData(DEFAULT_DATA);
-    } finally {
-      loadedRef.current = true;
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!loadedRef.current || data === null) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    } catch (e) {
-      console.error('Could not save tracker data', e);
-    }
-  }, [data]);
-
-  return [data, setData];
-}
-
-function useProfileStorage() {
-  const [profile, setProfile] = useState(null);
-  const loadedRef = useRef(false);
-
-  useEffect(() => {
-    try {
-      const res = localStorage.getItem(PROFILE_STORAGE_KEY);
-      setProfile(res ? JSON.parse(res) : DEFAULT_PROFILE);
-    } catch (e) {
-      setProfile(DEFAULT_PROFILE);
-    } finally {
-      loadedRef.current = true;
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!loadedRef.current || profile === null) return;
-    try {
-      localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
-    } catch (e) {
-      console.error('Could not save profile data', e);
-    }
-  }, [profile]);
-
-  return [profile, setProfile];
-}
 
 function StatCard({ icon: Icon, label, value, color }) {
   const c = COLORS[color] || COLORS.teal;
@@ -192,13 +143,13 @@ function StatCard({ icon: Icon, label, value, color }) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="bg-white/40 dark:bg-stone-800/40 backdrop-blur-xl border border-white/60 dark:border-stone-700/60 rounded-2xl shadow-md p-4 flex items-center gap-3"
+      className="bg-white/40 dark:bg-slate-800/30 backdrop-blur-xl border border-white/60 dark:border-white/10 rounded-2xl shadow-md p-4 flex items-center gap-3"
     >
       <div className={`w-10 h-10 rounded-xl ${c.light} flex items-center justify-center shrink-0`}>
         <Icon className={`w-5 h-5 ${c.text}`} />
       </div>
       <div className="min-w-0">
-        <p className="text-lg font-bold text-stone-800 dark:text-white dark:text-white leading-tight truncate">{value}</p>
+        <p className="text-lg font-bold text-stone-800 dark:text-white leading-tight truncate">{value}</p>
         <p className="text-[11px] text-stone-500 dark:text-stone-400 truncate">{label}</p>
       </div>
     </motion.div>
@@ -341,8 +292,59 @@ function PrintView({ habits, year, month }) {
 }
 
 export default function HabitTracker() {
-  const [data, setData] = useTrackerStorage();
-  const [profile, setProfile] = useProfileStorage();
+ 
+  const [data, setData] = useState(null);
+  const [profile, setProfile] = useState(null);
+  
+  const [user, setUser] = useState(null);
+
+ 
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  
+  useEffect(() => {
+    if (!user) return;
+    
+    const fetchUserData = async () => {
+      const docRef = doc(db, 'users', user.uid);
+      const docSnap = await getDoc(docRef);
+      
+      if (docSnap.exists()) {
+        
+        const dbData = docSnap.data();
+        setData(dbData.trackerData || DEFAULT_DATA);
+        setProfile(dbData.profileData || DEFAULT_PROFILE);
+      } else {
+        
+        setData(DEFAULT_DATA);
+        setProfile(DEFAULT_PROFILE);
+      }
+    };
+    
+    fetchUserData();
+  }, [user]);
+
+  
+  useEffect(() => {
+   
+    if (!user || !data || !profile) return;
+    
+    const saveUserData = async () => {
+      const docRef = doc(db, 'users', user.uid);
+      await setDoc(docRef, {
+        trackerData: data,
+        profileData: profile
+      }, { merge: true }); 
+    };
+    
+    saveUserData();
+  }, [data, profile, user]); 
+
   const [quoteIndex, setQuoteIndex] = useState(0);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingHabitId, setEditingHabitId] = useState(null);
@@ -503,6 +505,10 @@ export default function HabitTracker() {
     return <LoginScreen />;
   }
 
+  if (user.email === 'uussaff@gmail.com') { 
+    return <AdminDashboard handleSignOut={() => signOut(auth)} />;
+  }
+
   if (!data || !profile) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cyan-50 via-teal-50 to-amber-50 dark:from-stone-900 dark:via-stone-800 dark:to-teal-950 dark:text-stone-200 transition-colors duration-500">
@@ -639,23 +645,23 @@ export default function HabitTracker() {
 
   return (
     <>
-      <div className="print:hidden min-h-screen relative overflow-hidden bg-gradient-to-br from-cyan-50 via-teal-50 to-amber-50 dark:from-stone-900 dark:via-stone-800 dark:to-teal-950 dark:text-stone-200 transition-colors duration-500 font-sans">
-        
-  
+      <div className="print:hidden min-h-screen relative overflow-hidden bg-gradient-to-br from-cyan-50 via-teal-50 to-amber-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 dark:text-slate-200 transition-colors duration-500 font-sans">
+
+
         <header className="relative z-20 w-full bg-white/40 dark:bg-stone-900/40 backdrop-blur-xl border-b border-white/60 dark:border-stone-700/60 shadow-sm px-4 sm:px-6 py-3 flex justify-between items-center transition-colors">
-          
-         
+
+
           <div className="flex items-center gap-2 sm:gap-3">
-            <img 
-              src="https://res.cloudinary.com/dy1wk6svu/image/upload/f_auto,q_auto/bg_hou2cp" 
-              alt="usafs logo" 
+            <img
+              src="https://res.cloudinary.com/dy1wk6svu/image/upload/f_auto,q_auto/bg_hou2cp"
+              alt="usafs logo"
               className="h-8 sm:h-10 w-auto rounded-lg object-contain drop-shadow-sm"
             />
             <span className="font-bold text-stone-700 dark:text-stone-200 tracking-wide text-sm sm:text-base hidden sm:block">
               USAF's Habit Tracker
             </span>
           </div>
-     
+
 
           <div className="flex items-center gap-3">
             <button
@@ -672,6 +678,12 @@ export default function HabitTracker() {
               <Download className="w-4 h-4" /> CSV
             </button>
 
+             <button 
+              onClick={() => signOut(auth)} 
+              className="flex items-center gap-1.5 text-sm font-medium text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/30 px-3 py-1.5 rounded-full border border-rose-200 dark:border-rose-800 shadow-sm hover:shadow-md transition-all"
+            >
+               Logout
+            </button>
             <a
               href="https://github.com/uusaff"
               target="_blank"
@@ -717,7 +729,7 @@ export default function HabitTracker() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="bg-white/40 dark:bg-stone-800/40 backdrop-blur-xl border border-white/60 dark:border-stone-700/60 rounded-3xl shadow-lg shadow-emerald-100/50 dark:shadow-black/40 p-5 sm:p-6 mb-6 flex flex-wrap items-center gap-4"
+            className="bg-white/40 dark:bg-slate-800/30 backdrop-blur-xl border border-white/60 dark:border-white/10 rounded-3xl shadow-lg shadow-emerald-100/50 dark:shadow-black/40 p-5 sm:p-6 mb-6 flex flex-wrap items-center gap-4"
           >
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-xl font-bold shrink-0 shadow-md">
               {profile.name ? profile.name.trim()[0].toUpperCase() : <User className="w-6 h-6" />}
@@ -821,7 +833,7 @@ export default function HabitTracker() {
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0.95, opacity: 0 }}
                   onClick={(e) => e.stopPropagation()}
-                  className="bg-white/90 dark:bg-stone-800/90 backdrop-blur-xl border border-white/70 dark:border-stone-600 rounded-3xl shadow-2xl p-6 w-full max-w-xs"
+                  className="bg-white/90 dark:bg-slate-900/95 backdrop-blur-xl border border-white/70 dark:border-white/10 rounded-3xl shadow-2xl p-6 w-full max-w-xs"
                 >
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="font-semibold text-stone-800 dark:text-white flex items-center gap-2">
@@ -869,7 +881,7 @@ export default function HabitTracker() {
             <StatCard icon={Target} label="Monthly Rate" value={`${monthlyRate}%`} color="sky" />
           </div>
 
-          <div className="bg-white/40 dark:bg-stone-800/40 backdrop-blur-xl border border-white/60 dark:border-stone-700/60 rounded-3xl shadow-lg shadow-orange-100/50 dark:shadow-black/40 p-5 sm:p-6 mb-6 flex items-start gap-3">
+          <div className="bg-white/40 dark:bg-slate-800/30 backdrop-blur-xl border border-white/60 dark:border-white/10 rounded-3xl shadow-lg shadow-orange-100/50 dark:shadow-black/40 p-5 sm:p-6 mb-6 flex items-start gap-3">
             <QuoteIcon className="w-5 h-5 text-orange-400 shrink-0 mt-1" />
             <AnimatePresence mode="wait">
               <motion.p
@@ -886,7 +898,7 @@ export default function HabitTracker() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="bg-white/40 dark:bg-stone-800/40 backdrop-blur-xl border border-white/60 dark:border-stone-700/60 rounded-3xl shadow-lg shadow-teal-100/50 dark:shadow-black/40 p-6 flex flex-col items-center justify-center">
+            <div className="bg-white/40 dark:bg-slate-800/30 backdrop-blur-xl border border-white/60 dark:border-white/100 rounded-3xl shadow-lg shadow-teal-100/50 dark:shadow-black/40 p-6 flex flex-col items-center justify-center">
               <div className="relative w-36 h-36">
                 <svg className="w-36 h-36 -rotate-90" viewBox="0 0 132 132">
                   <circle cx="66" cy="66" r={radius} fill="none" stroke="#e7e5e4" strokeWidth="12" />
@@ -919,7 +931,7 @@ export default function HabitTracker() {
               </div>
             </div>
 
-            <div className="lg:col-span-2 bg-white/40 dark:bg-stone-800/40 backdrop-blur-xl border border-white/60 dark:border-stone-700/60 rounded-3xl shadow-lg shadow-teal-100/50 dark:shadow-black/40 p-5 sm:p-6">
+            <div className="lg:col-span-2 bg-white/40 dark:bg-slate-800/30 backdrop-blur-xl border border-white/60 dark:border-white/10 rounded-3xl shadow-lg shadow-teal-100/50 dark:shadow-black/40 p-5 sm:p-6">
               <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                 <div className="flex items-center gap-1.5 bg-white/50 rounded-full p-1">
                   <button
@@ -1056,14 +1068,15 @@ export default function HabitTracker() {
                                         <Icon className={`w-4 h-4 ${color.text}`} />
                                       </div>
                                       <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-medium text-stone-700 dark:text-stone-100 whitespace-normal break-words leading-tight">{habit.name}</p>
+                                        <p className="text-sm font-medium text-stone-700 dark:text-stone-100 truncate max-w-[90px] sm:max-w-[140px] leading-tight">{habit.name}</p>
                                         {streak > 0 && (
                                           <p className="text-[10px] text-orange-500 flex items-center gap-0.5 mt-0.5">
                                             <Flame className="w-3 h-3" /> {streak} day{streak > 1 ? 's' : ''}
                                           </p>
                                         )}
                                       </div>
-                                      <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shrink-0">
+
+                                      <div className="ml-auto opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center gap-1 shrink-0">
                                         <button onClick={() => openEditForm(habit)} className="text-stone-300 hover:text-teal-500 transition-colors p-1">
                                           <Edit3 className="w-3.5 h-3.5" />
                                         </button>
@@ -1200,18 +1213,58 @@ export default function HabitTracker() {
               )}
             </div>
           </div>
-          
+
           {/* WEB WALA COPYRIGHT FOOTER */}
           <div className="mt-10 border-t border-stone-200/50 dark:border-stone-700/50 pt-4 flex flex-col sm:flex-row justify-between items-center gap-2 text-[11px] text-stone-500 dark:text-stone-400 font-medium tracking-wide">
             <p>© {new Date().getFullYear()} M Yousaf. All Rights Reserved.</p>
             <p className="flex items-center gap-1">® Trademark Registered</p>
           </div>
-          
+
         </motion.div>
       </div>
 
       {/* PRINT VIEW COMPONENT (End mein) */}
       <PrintView habits={habits} year={printYear} month={printMonth} />
     </>
+  );
+}
+
+function AdminDashboard({ handleSignOut }) {
+  const [allUsers, setAllUsers] = React.useState([]);
+
+  React.useEffect(() => {
+    const fetchAllData = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "users"));
+        const usersData = [];
+        querySnapshot.forEach((doc) => {
+          usersData.push({ id: doc.id, ...doc.data() });
+        });
+        setAllUsers(usersData);
+      } catch (error) {
+        console.error("Error fetching admin data:", error);
+      }
+    };
+    fetchAllData();
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-stone-100 p-8">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-stone-800">Admin Dashboard</h1>
+          <button onClick={handleSignOut} className="bg-rose-500 text-white px-4 py-2 rounded-lg">Logout</button>
+        </div>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-stone-200">
+          <h2 className="text-xl font-semibold mb-4">Total Users: {allUsers.length}</h2>
+          {allUsers.map((u, i) => (
+            <div key={u.id} className="border-b py-3 flex justify-between">
+              <span className="font-medium text-stone-700">{u.profileData?.name || `User ${i+1}`}</span>
+              <span className="text-stone-500">Habits Tracked: {u.trackerData?.habits?.length || 0}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
