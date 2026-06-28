@@ -1,10 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
-import { onAuthStateChanged } from 'firebase/auth';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore'; 
 import LoginScreen from './Login';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
