@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
@@ -25,31 +24,10 @@ import WeeklyChallenge from './components/WeeklyChallenge';
 import AccountabilityScore from './components/AccountabilityScore';
 import ShareCard from './components/ShareCard';
 import WebhookSettings from './components/WebhookSettings';
-=======
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { collection, getDocs, doc, getDoc, setDoc } from 'firebase/firestore';
-import { auth, db } from './firebase';
-import LoginScreen from './Login';
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
-// Added LogOut, ChevronLeft to the imports
-import {
-  Footprints, BookOpen, Moon, Leaf, Dumbbell, Droplet, Brain, Heart,
-  Music, Camera, Coffee, PenLine, Plus, Trash2, Check,
-  Quote as QuoteIcon, Flame, TrendingUp, User, Calendar, Edit3, X,
-  Award, Target, Sun, Printer, Download, Minus, Settings, BarChart2,
-  Zap, Trophy, Sparkles, ChevronRight, ChevronLeft, Activity, LogOut
-} from 'lucide-react';
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
 
 // ============================================================================
 // CONSTANTS & CONFIGURATION
 // ============================================================================
-<<<<<<< HEAD
-=======
-const STORAGE_KEY = 'tropical-habit-tracker-v1';
-const PROFILE_STORAGE_KEY = 'tropical-habit-tracker-profile-v1';
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
 
 const ICONS = { Footprints, BookOpen, Moon, Leaf, Dumbbell, Droplet, Brain, Heart, Music, Camera, Coffee, PenLine, Activity, Zap };
 const ICON_KEYS = Object.keys(ICONS);
@@ -78,19 +56,6 @@ const QUOTES = [
   { text: "Every action you take is a vote for the person you wish to become.", author: "James Clear" },
 ];
 
-<<<<<<< HEAD
-=======
-const DEFAULT_HABITS = [
-  { id: 'h1', name: 'Daily Steps', icon: 'Footprints', color: 'teal', category: 'Anytime' },
-  { id: 'h2', name: 'Deep Work', icon: 'BookOpen', color: 'purple', category: 'Morning' },
-  { id: 'h3', name: 'Sleep Tracking', icon: 'Moon', color: 'sky', category: 'Evening' },
-  { id: 'h4', name: 'Hydration', icon: 'Droplet', color: 'sky', category: 'Anytime' },
-];
-
-const DEFAULT_DATA = { habits: DEFAULT_HABITS, checkins: {} };
-const DEFAULT_PROFILE = { name: '', age: '', weight: '', height: '' };
-
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
 const ACHIEVEMENTS = [
   { id: 'a1', title: 'Beginner', desc: 'Complete your first 10 habits', req: 10, icon: '🌟', color: 'sand' },
   { id: 'a2', title: 'Consistent', desc: 'Reach a 7-day streak', req: 7, isStreak: true, icon: '🔥', color: 'orange' },
@@ -113,10 +78,6 @@ function getWeekDates() {
     return d;
   });
 }
-<<<<<<< HEAD
-=======
-const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
 const dayNamesShort = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
 function daysInMonth(year, month) { return new Date(year, month + 1, 0).getDate(); }
@@ -124,7 +85,6 @@ function getMonthDates(year, month) {
   const total = daysInMonth(year, month);
   return Array.from({ length: total }, (_, i) => new Date(year, month, i + 1));
 }
-<<<<<<< HEAD
 function sanitizeInput(input) {
   return input.replace(/[<>&"']/g, (char) => ({
     '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#x27;'
@@ -136,13 +96,6 @@ function getEntry(checkins, dKey, habitId) {
   if (!v) return { status: 'unchecked', note: '', value: 0 };
   if (v === true) return { status: 'checked', note: '', value: 1 };
   return { status: v.status || 'unchecked', note: v.note || '', value: v.value != null ? v.value : (v.status === 'checked' ? 1 : 0) };
-=======
-function getEntry(checkins, dKey, habitId) {
-  const v = checkins[dKey]?.[habitId];
-  if (!v) return { status: 'unchecked', note: '' };
-  if (v === true) return { status: 'checked', note: '' };
-  return { status: v.status || 'unchecked', note: v.note || '' };
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
 }
 function getLongestStreak(habitId, checkins) {
   const keys = Object.keys(checkins);
@@ -160,11 +113,7 @@ function getLongestStreak(habitId, checkins) {
   }
   return longest;
 }
-<<<<<<< HEAD
 function exportToCSVString(habits, checkins) {
-=======
-function exportToCSV(habits, checkins) {
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
   const dates = Object.keys(checkins).sort();
   const headers = ['Date', ...habits.map((h) => h.name)];
   const rows = dates.map((dK) => {
@@ -175,7 +124,6 @@ function exportToCSV(habits, checkins) {
     });
     return row;
   });
-<<<<<<< HEAD
   return [headers, ...rows]
     .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(','))
     .join('\n');
@@ -187,29 +135,16 @@ function downloadFile(content, filename, mimeType) {
   const link = document.createElement('a');
   link.href = url;
   link.download = filename;
-=======
-  const csv = [headers, ...rows]
-    .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(','))
-    .join('\n');
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `habit-tracker-${dateKey(new Date())}.csv`;
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
 
-<<<<<<< HEAD
 function exportToCSV(habits, checkins) {
   downloadFile(exportToCSVString(habits, checkins), `habit-tracker-${dateKey(new Date())}.csv`, 'text/csv');
 }
 
-=======
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
 // ============================================================================
 // UI COMPONENTS
 // ============================================================================
@@ -221,11 +156,7 @@ const ScrollSection = ({ children, id, className = '' }) => (
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true, margin: "-100px" }}
     transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-<<<<<<< HEAD
     className={`w-full max-w-6xl mx-auto px-3 sm:px-6 md:px-8 py-8 sm:py-10 md:py-12 ${className}`}
-=======
-    className={`w-full max-w-6xl mx-auto px-4 sm:px-8 py-12 ${className}`}
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
   >
     {children}
   </motion.section>
@@ -246,11 +177,6 @@ const AnimatedNumber = ({ value }) => {
 // ============================================================================
 
 export default function HabitTracker() {
-<<<<<<< HEAD
-=======
-  const [data, setData] = useState(null);
-  const [profile, setProfile] = useState(null);
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
   const [user, setUser] = useState(null);
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
   const [viewMode, setViewMode] = useState('weekly');
@@ -271,24 +197,16 @@ export default function HabitTracker() {
   const [newIcon, setNewIcon] = useState('Footprints');
   const [newColor, setNewColor] = useState('teal');
   const [newCategory, setNewCategory] = useState('Anytime');
-<<<<<<< HEAD
   const [expandedHabitId, setExpandedHabitId] = useState(null);
-=======
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
 
   // Profile Form State
   const [pName, setPName] = useState('');
   const [pAge, setPAge] = useState('');
   const [pWeight, setPWeight] = useState('');
-<<<<<<< HEAD
-=======
-  const [pHeight, setPHeight] = useState('');
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
 
   // Print State
   const [selectedPrintMonth, setSelectedPrintMonth] = useState(() => new Date().getMonth());
   const [printMonth, setPrintMonth] = useState(() => new Date().getMonth());
-<<<<<<< HEAD
   const printYear = new Date().getFullYear();
 
   // Admin State
@@ -334,45 +252,6 @@ export default function HabitTracker() {
   const { skipPatterns, consistencyTrend, bestWorst, streakProjection, weeklySummary } = usePatternDetection(habits, checkins, today);
 
   const { webhooks, addWebhook, removeWebhook, testWebhook, lastResult, events, setLastResult } = useWebhooks();
-=======
-  const [printYear, setPrintYear] = useState(() => new Date().getFullYear());
-
-  const { scrollYProgress } = useScroll();
-
-  // Authentication & Data Fetching
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => setUser(currentUser));
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    if (!user) return;
-    const fetchUserData = async () => {
-      const docRef = doc(db, 'users', user.uid);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const dbData = docSnap.data();
-        setData({
-          habits: Array.isArray(dbData.trackerData?.habits) ? dbData.trackerData.habits : DEFAULT_DATA.habits,
-          checkins: typeof dbData.trackerData?.checkins === "object" ? dbData.trackerData.checkins : {},
-        });
-        setProfile(dbData.profileData || DEFAULT_PROFILE);
-      } else {
-        setData(DEFAULT_DATA);
-        setProfile(DEFAULT_PROFILE);
-      }
-    };
-    fetchUserData();
-  }, [user]);
-
-  useEffect(() => {
-    if (!user || !data || !profile) return;
-    const saveUserData = async () => {
-      await setDoc(doc(db, 'users', user.uid), { trackerData: data, profileData: profile }, { merge: true });
-    };
-    saveUserData();
-  }, [data, profile, user]);
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
 
   // Handle Theme Toggle
   useEffect(() => {
@@ -398,7 +277,6 @@ export default function HabitTracker() {
 
   // Memoized Dates & Logic
   const weekDates = useMemo(() => getWeekDates(), []);
-<<<<<<< HEAD
   const todayKey = dateKey(today);
   const monthDates = useMemo(() => getMonthDates(year, month), [year, month]);
   const daysElapsed = today.getDate();
@@ -408,33 +286,6 @@ export default function HabitTracker() {
   const currentStreak = useMemo(() => habits.reduce((max, h) => Math.max(max, getStreak(h.id)), 0), [habits, getStreak]);
   const bestStreakEver = useMemo(() => habits.reduce((max, h) => Math.max(max, getLongestStreak(h.id, checkins)), 0), [habits, checkins]);
   const totalCheckins = useMemo(() => habits.reduce((acc, h) => acc + Object.keys(checkins).filter(k => getEntryHook(k, h.id).status === 'checked').length, 0), [habits, getEntryHook, checkins]);
-=======
-  const today = useMemo(() => new Date(), []);
-  const todayKey = dateKey(today);
-  const year = today.getFullYear();
-  const month = today.getMonth();
-  const monthDates = useMemo(() => getMonthDates(year, month), [year, month]);
-  const daysElapsed = today.getDate();
-
-  const habits = data?.habits || [];
-  const checkins = data?.checkins || {};
-
-  const getStreak = (habitId) => {
-    let streak = 0;
-    const cursor = new Date();
-    while (true) {
-      const entry = getEntry(checkins, dateKey(cursor), habitId);
-      if (entry.status === 'checked') { streak++; cursor.setDate(cursor.getDate() - 1); }
-      else if (entry.status === 'skipped') { cursor.setDate(cursor.getDate() - 1); }
-      else break;
-    }
-    return streak;
-  };
-
-  const currentStreak = useMemo(() => habits.reduce((max, h) => Math.max(max, getStreak(h.id)), 0), [habits, checkins]);
-  const bestStreakEver = useMemo(() => habits.reduce((max, h) => Math.max(max, getLongestStreak(h.id, checkins)), 0), [habits, checkins]);
-  const totalCheckins = useMemo(() => habits.reduce((acc, h) => acc + Object.keys(checkins).filter(k => getEntry(checkins, k, h.id).status === 'checked').length, 0), [checkins, habits]);
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
   
   // XP & Level System
   const totalXP = totalCheckins * 10;
@@ -446,31 +297,17 @@ export default function HabitTracker() {
     let count = 0;
     monthDates.forEach((d) => {
       if (d > today) return;
-<<<<<<< HEAD
       habits.forEach((h) => { if (getEntryHook(dateKey(d), h.id).status === 'checked') count++; });
     });
     return count;
   }, [monthDates, habits, today, getEntryHook]);
 
   const todayChecked = habits.filter((h) => getEntryHook(todayKey, h.id).status === 'checked').length;
-=======
-      habits.forEach((h) => { if (getEntry(checkins, dateKey(d), h.id).status === 'checked') count++; });
-    });
-    return count;
-  }, [monthDates, habits, checkins, today]);
-
-  const habitMonthlyCount = (habitId) => {
-    return monthDates.filter(d => d <= today && getEntry(checkins, dateKey(d), habitId).status === 'checked').length;
-  };
-
-  const todayChecked = habits.filter((h) => getEntry(checkins, todayKey, h.id).status === 'checked').length;
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
   const totalHabits = habits.length;
   const pct = totalHabits === 0 ? 0 : Math.round((todayChecked / totalHabits) * 100);
   const monthlyTotalPossible = habits.length * daysElapsed;
   const monthlyRate = monthlyTotalPossible === 0 ? 0 : Math.round((monthlyCompleted / monthlyTotalPossible) * 100);
 
-<<<<<<< HEAD
   // Analytics Chart Data Preparation
   const weeklyData = useMemo(() => weekDates.map(d => {
     const k = dateKey(d);
@@ -511,64 +348,10 @@ export default function HabitTracker() {
     if (sanitized.length > 500) { window.alert('Note is too long (max 500 characters).'); return; }
     setCheckinNote(habitId, dKey, sanitized);
   }, [getEntryHook, setCheckinNote]);
-=======
-  const bestHabit = useMemo(() => {
-    if (habits.length === 0) return null;
-    let best = habits[0], bestCount = habitMonthlyCount(best.id);
-    habits.forEach((h) => {
-      const c = habitMonthlyCount(h.id);
-      if (c > bestCount) { best = h; bestCount = c; }
-    });
-    return bestCount > 0 ? best : null;
-  }, [habits, checkins, monthDates]);
-
-  // Analytics Chart Data Preparation
-  const weeklyData = weekDates.map(d => {
-    const k = dateKey(d);
-    return {
-      day: dayNamesShort[d.getDay()],
-      count: habits.filter(h => getEntry(checkins, k, h.id).status === 'checked').length
-    };
-  });
-  const maxWeeklyCount = Math.max(...weeklyData.map(d => d.count), 1);
-
-  // AI Insights generation
-  const insights = useMemo(() => {
-    const res = [];
-    if (currentStreak > 3) res.push(`You're on fire! A ${currentStreak}-day streak is incredible. Keep the momentum going.`);
-    if (bestHabit) res.push(`${bestHabit.name} is your strongest habit this month. You're building solid discipline here.`);
-    if (pct === 100) res.push(`Perfect day today. You've completed 100% of your targets. Your future self is thanking you.`);
-    else if (pct > 50) res.push(`Good progress today. Just a little more effort to hit a perfect score.`);
-    else res.push(`Every day is a fresh start. Focus on knocking out just one habit right now.`);
-    return res;
-  }, [currentStreak, bestHabit, pct]);
-
-  // Actions
-  const toggleCheckin = (habitId, dKey) => {
-    setData((prev) => {
-      const day = prev.checkins[dKey] || {};
-      const current = getEntry(prev.checkins, dKey, habitId);
-      const nextStatus = current.status === 'checked' ? 'skipped' : current.status === 'skipped' ? 'unchecked' : 'checked';
-      return { ...prev, checkins: { ...prev.checkins, [dKey]: { ...day, [habitId]: { status: nextStatus, note: current.note } } } };
-    });
-  };
-
-  const setCheckinNote = (habitId, dKey) => {
-    const current = getEntry(data.checkins, dKey, habitId);
-    const note = window.prompt('Note for this check-in:', current.note || '');
-    if (note === null) return;
-    setData((prev) => {
-      const day = prev.checkins[dKey] || {};
-      const existing = getEntry(prev.checkins, dKey, habitId);
-      return { ...prev, checkins: { ...prev.checkins, [dKey]: { ...day, [habitId]: { ...existing, note: note.trim() } } } };
-    });
-  };
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
 
   const saveHabit = () => {
     if (!newName.trim()) return;
     if (editingHabitId) {
-<<<<<<< HEAD
       updateHabit(editingHabitId, {
         name: newName.trim(),
         icon: newIcon,
@@ -583,17 +366,6 @@ export default function HabitTracker() {
         category: newCategory,
         type: 'binary',
       });
-=======
-      setData((prev) => ({
-        ...prev,
-        habits: prev.habits.map((h) => h.id === editingHabitId ? { ...h, name: newName.trim(), icon: newIcon, color: newColor, category: newCategory } : h),
-      }));
-    } else {
-      setData((prev) => ({
-        ...prev,
-        habits: [...prev.habits, { id: "h" + Date.now(), name: newName.trim(), icon: newIcon, color: newColor, category: newCategory }],
-      }));
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
     }
     cancelForm();
   };
@@ -602,11 +374,7 @@ export default function HabitTracker() {
     setNewName(""); setNewIcon("Footprints"); setNewColor("teal"); setNewCategory("Anytime"); setEditingHabitId(null); setShowAddForm(false);
   };
 
-<<<<<<< HEAD
   const handleDeleteHabit = useCallback((id) => deleteHabit(id), [deleteHabit]);
-=======
-  const deleteHabit = (id) => setData((prev) => ({ ...prev, habits: prev.habits.filter((h) => h.id !== id) }));
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
 
   // Navigation Links
   const navLinks = [
@@ -617,21 +385,15 @@ export default function HabitTracker() {
   ];
 
   if (!user) return <LoginScreen />;
-<<<<<<< HEAD
   if (isAdmin && ready) return <AdminDashboard handleSignOut={() => signOut(auth)} />;
   if (error) return <ErrorScreen error={error} theme={theme} onRetry={() => window.location.reload()} />;
   if (!ready || isAdmin === null) return <LoadingScreen theme={theme} />;
-=======
-  if (user.email === 'uussaff@gmail.com') return <AdminDashboard handleSignOut={() => signOut(auth)} />;
-  if (!data || !profile) return <LoadingScreen theme={theme} />;
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
 
   return (
     <>
       <div className="print:hidden relative min-h-screen font-sans text-slate-800 dark:text-slate-200 selection:bg-teal-500/30 overflow-x-hidden">
         <CinematicBackground theme={theme} />
 
-<<<<<<< HEAD
         {/* Expandable Left Sidebar (now consistent across mobile & desktop) */}
         <nav className="fixed top-1/2 -translate-y-1/2 left-2 sm:left-4 md:left-6 z-50 flex items-start group">
           <GlassCard
@@ -646,36 +408,13 @@ export default function HabitTracker() {
               className="hidden md:flex p-3 rounded-2xl text-amber-500 hover:bg-stone-100/50 dark:hover:bg-stone-800/50 transition-all items-center shrink-0 w-full outline-none"
             >
               {theme === 'dark' ? <Sun className="w-5 h-5 shrink-0 mx-0" /> : <Moon className="w-5 h-5 shrink-0 mx-0" />}
-=======
-        {/* Floating Expandable Sidebar / Mobile Bottom Nav */}
-        <nav className="fixed bottom-4 left-1/2 -translate-x-1/2 md:translate-x-0 md:top-1/2 md:-translate-y-1/2 md:left-6 md:bottom-auto z-50 flex items-center md:items-start group">
-          <GlassCard
-            className={`flex p-2 gap-2 rounded-[2rem] border-white/40 dark:border-white/10 transition-all duration-300 overflow-hidden ${
-              isNavExpanded
-                ? 'flex-col w-[200px] items-start' // Expanded State
-                : 'flex-row w-auto md:flex-col md:w-[68px] md:hover:w-[200px] md:items-start items-center' // Collapsed State
-            }`}
-            hover={false}
-          >
-            {/* Theme Toggle Button at the top/front */}
-            <button
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="p-3 rounded-full md:rounded-2xl text-amber-500 hover:bg-stone-100/50 dark:hover:bg-stone-800/50 transition-all flex items-center shrink-0 w-full outline-none"
-            >
-              {theme === 'dark' ? <Sun className="w-5 h-5 shrink-0 mx-auto md:mx-0" /> : <Moon className="w-5 h-5 shrink-0 mx-auto md:mx-0" />}
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
               <span className={`whitespace-nowrap text-sm font-bold opacity-0 transition-all duration-300 ${isNavExpanded ? 'ml-3 opacity-100 w-auto' : 'w-0 md:group-hover:opacity-100 md:group-hover:ml-3 md:group-hover:w-auto hidden md:block'}`}>
                 {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
               </span>
             </button>
 
-<<<<<<< HEAD
             {/* Divider (desktop only, sits under the theme toggle) */}
             <div className="hidden md:block bg-stone-200 dark:bg-stone-700 shrink-0 w-full h-px my-1" />
-=======
-            {/* Divider */}
-            <div className={`bg-stone-200 dark:bg-stone-700 shrink-0 ${isNavExpanded ? 'w-full h-px my-1' : 'w-px h-6 mx-1 md:w-full md:h-px md:my-1 md:mx-0'}`} />
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
 
             {/* Nav Links */}
             {navLinks.map((link) => (
@@ -683,15 +422,9 @@ export default function HabitTracker() {
                 key={link.id}
                 href={`#${link.id}`}
                 onClick={() => setIsNavExpanded(false)}
-<<<<<<< HEAD
                 className="p-2.5 sm:p-3 rounded-2xl text-stone-500 hover:text-teal-600 dark:text-stone-400 dark:hover:text-teal-400 hover:bg-stone-100/50 dark:hover:bg-stone-800/50 transition-all flex items-center shrink-0 w-full outline-none"
               >
                 <link.icon className="w-4 h-4 sm:w-5 sm:h-5 shrink-0 mx-0" />
-=======
-                className="p-3 rounded-full md:rounded-2xl text-stone-500 hover:text-teal-600 dark:text-stone-400 dark:hover:text-teal-400 hover:bg-stone-100/50 dark:hover:bg-stone-800/50 transition-all flex items-center shrink-0 w-full outline-none"
-              >
-                <link.icon className="w-5 h-5 shrink-0 mx-auto md:mx-0" />
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
                 <span className={`whitespace-nowrap text-sm font-bold opacity-0 transition-all duration-300 ${isNavExpanded ? 'ml-3 opacity-100 w-auto' : 'w-0 md:group-hover:opacity-100 md:group-hover:ml-3 md:group-hover:w-auto hidden md:block'}`}>
                   {link.label}
                 </span>
@@ -699,70 +432,41 @@ export default function HabitTracker() {
             ))}
 
             {/* Divider */}
-<<<<<<< HEAD
             <div className="bg-stone-200 dark:bg-stone-700 shrink-0 w-full h-px my-1" />
-=======
-            <div className={`bg-stone-200 dark:bg-stone-700 shrink-0 ${isNavExpanded ? 'w-full h-px my-1' : 'w-px h-6 mx-1 md:w-full md:h-px md:my-1 md:mx-0'}`} />
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
 
             {/* Settings */}
             <button
               onClick={() => { setShowSettings(true); setIsNavExpanded(false); }}
-<<<<<<< HEAD
               className="p-2.5 sm:p-3 rounded-2xl text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-white transition-all flex items-center shrink-0 w-full outline-none"
             >
               <Settings className="w-4 h-4 sm:w-5 sm:h-5 shrink-0 mx-0" />
-=======
-              className="p-3 rounded-full md:rounded-2xl text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-white transition-all flex items-center shrink-0 w-full outline-none"
-            >
-              <Settings className="w-5 h-5 shrink-0 mx-auto md:mx-0" />
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
               <span className={`whitespace-nowrap text-sm font-bold opacity-0 transition-all duration-300 ${isNavExpanded ? 'ml-3 opacity-100 w-auto' : 'w-0 md:group-hover:opacity-100 md:group-hover:ml-3 md:group-hover:w-auto hidden md:block'}`}>
                 Settings
               </span>
             </button>
 
-<<<<<<< HEAD
             {/* Log Out */}
             <button
               onClick={() => signOut(auth)}
               className="p-2.5 sm:p-3 rounded-2xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all flex items-center shrink-0 w-full outline-none"
             >
               <LogOut className="w-4 h-4 sm:w-5 sm:h-5 shrink-0 mx-0" />
-=======
-            {/* Log Out (Only shows horizontally if expanded on Mobile, or automatically on Desktop) */}
-            <button
-              onClick={() => signOut(auth)}
-              className={`p-3 rounded-full md:rounded-2xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all items-center shrink-0 w-full outline-none ${isNavExpanded ? 'flex' : 'hidden md:flex'}`}
-            >
-              <LogOut className="w-5 h-5 shrink-0 mx-auto md:mx-0" />
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
               <span className={`whitespace-nowrap text-sm font-bold opacity-0 transition-all duration-300 ${isNavExpanded ? 'ml-3 opacity-100 w-auto' : 'w-0 md:group-hover:opacity-100 md:group-hover:ml-3 md:group-hover:w-auto hidden md:block'}`}>
                 Log Out
               </span>
             </button>
 
-<<<<<<< HEAD
             {/* Arrow to expand/collapse (mobile & tablet, since they lack hover) */}
             <button
               onClick={() => setIsNavExpanded(!isNavExpanded)}
               className="md:hidden p-2.5 rounded-2xl text-stone-400 hover:text-stone-800 dark:hover:text-white transition-colors shrink-0 w-full flex justify-center outline-none"
             >
               {isNavExpanded ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-=======
-            {/* Mobile Arrow Button to expand/collapse (Visible only on Mobile) */}
-            <button
-              onClick={() => setIsNavExpanded(!isNavExpanded)}
-              className={`md:hidden p-3 rounded-full text-stone-400 hover:text-stone-800 dark:hover:text-white transition-colors shrink-0 w-full flex justify-center outline-none`}
-            >
-              {isNavExpanded ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
             </button>
           </GlassCard>
         </nav>
 
         {/* Main Content Wrapper */}
-<<<<<<< HEAD
         <main className="ml-14 sm:ml-20 md:ml-24 pb-16 sm:pb-20 md:pb-24 pt-6 sm:pt-8 md:pt-10">
           
           {/* Top Header */}
@@ -785,23 +489,6 @@ export default function HabitTracker() {
               </button>
               <button onClick={() => setShowProfileForm(true)} className="flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-sm hover:shadow-md transition-all">
                 <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gradient-to-r from-purple-400 to-pink-500 flex items-center justify-center text-white text-xs font-bold">
-=======
-        <main className="md:ml-24 pb-32 pt-10">
-          
-          {/* Top Header */}
-          <header className="max-w-6xl mx-auto px-4 sm:px-8 mb-12 flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-teal-400 to-cyan-500 p-[1px]">
-                <div className="w-full h-full bg-white/20 dark:bg-black/20 rounded-2xl backdrop-blur flex items-center justify-center">
-                  <Leaf className="w-6 h-6 text-white" />
-                </div>
-              </div>
-              <span className="font-extrabold text-xl tracking-tight hidden sm:block">Aura Tracker</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <button onClick={() => setShowProfileForm(true)} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-sm hover:shadow-md transition-all">
-                <div className="w-6 h-6 rounded-full bg-gradient-to-r from-purple-400 to-pink-500 flex items-center justify-center text-white text-xs font-bold">
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
                   {profile.name ? profile.name[0].toUpperCase() : <User className="w-3 h-3" />}
                 </div>
                 <span className="font-semibold text-sm hidden sm:block">{profile.name || 'Setup Profile'}</span>
@@ -819,39 +506,23 @@ export default function HabitTracker() {
                 </motion.div>
                 
                 <div>
-<<<<<<< HEAD
                   <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-stone-900 dark:text-white leading-tight">
                     {greeting}, <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-sky-500">{profile.name?.split(' ')[0] || 'Explorer'}</span>.
                   </h1>
                   <p className="text-sm sm:text-base md:text-lg text-stone-500 dark:text-stone-400 mt-3 sm:mt-4 max-w-xl leading-relaxed">
-=======
-                  <h1 className="text-5xl sm:text-7xl font-extrabold tracking-tight text-stone-900 dark:text-white leading-tight">
-                    {greeting}, <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-sky-500">{profile.name?.split(' ')[0] || 'Explorer'}</span>.
-                  </h1>
-                  <p className="text-lg sm:text-xl text-stone-500 dark:text-stone-400 mt-4 max-w-xl leading-relaxed">
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
                     You have <strong className="text-stone-800 dark:text-stone-200">{totalHabits - todayChecked} habits</strong> remaining today. Keep building the life you want.
                   </p>
                 </div>
 
-<<<<<<< HEAD
                 <div className="flex gap-4 pt-2 sm:pt-4">
                   <button onClick={() => document.getElementById('habits').scrollIntoView({ behavior: 'smooth' })} className="px-5 py-2.5 sm:px-6 sm:py-3 rounded-full bg-stone-900 dark:bg-white text-white dark:text-stone-900 text-sm sm:text-base font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center gap-2">
-=======
-                <div className="flex gap-4 pt-4">
-                  <button onClick={() => document.getElementById('habits').scrollIntoView({ behavior: 'smooth' })} className="px-6 py-3 rounded-full bg-stone-900 dark:bg-white text-white dark:text-stone-900 font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center gap-2">
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
                     Start Check-ins <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
               </div>
 
               {/* Progress Ring Hero */}
-<<<<<<< HEAD
               <div className="relative w-48 h-48 sm:w-64 sm:h-64 md:w-72 md:h-72 shrink-0 flex items-center justify-center">
-=======
-              <div className="relative w-72 h-72 sm:w-96 sm:h-96 shrink-0 flex items-center justify-center">
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
                 <div className="absolute inset-0 bg-gradient-to-tr from-teal-500/20 to-sky-500/20 rounded-full blur-3xl animate-pulse" />
                 <GlassCard className="absolute inset-4 rounded-full flex flex-col items-center justify-center z-10 border-white/80 dark:border-white/20">
                   <svg className="w-full h-full absolute inset-0 -rotate-90" viewBox="0 0 132 132">
@@ -874,17 +545,10 @@ export default function HabitTracker() {
                     </defs>
                   </svg>
                   <div className="text-center relative z-20">
-<<<<<<< HEAD
                     <span className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-stone-800 to-stone-500 dark:from-white dark:to-stone-400">
                       <AnimatedNumber value={pct} />%
                     </span>
                     <p className="text-xs sm:text-sm font-semibold text-stone-500 dark:text-stone-400 mt-1 uppercase tracking-widest">Today's Goal</p>
-=======
-                    <span className="text-5xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-stone-800 to-stone-500 dark:from-white dark:to-stone-400">
-                      <AnimatedNumber value={pct} />%
-                    </span>
-                    <p className="text-sm font-semibold text-stone-500 dark:text-stone-400 mt-1 uppercase tracking-widest">Today's Goal</p>
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
                   </div>
                 </GlassCard>
               </div>
@@ -893,45 +557,27 @@ export default function HabitTracker() {
 
           {/* 2. QUICK ACTIONS & LEVEL SYSTEM */}
           <ScrollSection>
-<<<<<<< HEAD
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
               {/* Level Card */}
               <GlassCard className="col-span-1 md:col-span-2 p-4 sm:p-6 flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
                 <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shrink-0 shadow-lg shadow-purple-500/30">
                   <Zap className="w-7 h-7 sm:w-10 sm:h-10 text-white" />
-=======
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Level Card */}
-              <GlassCard className="col-span-1 md:col-span-2 p-6 flex flex-col sm:flex-row items-center gap-6">
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shrink-0 shadow-lg shadow-purple-500/30">
-                  <Zap className="w-10 h-10 text-white" />
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
                 </div>
                 <div className="flex-1 w-full">
                   <div className="flex justify-between items-end mb-2">
                     <div>
-<<<<<<< HEAD
                       <p className="text-xs sm:text-sm font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">Current Level</p>
                       <h3 className="text-lg sm:text-2xl font-bold">Level {currentLevel}</h3>
                     </div>
                     <p className="text-xs sm:text-sm font-medium text-stone-500">{xpToNext} XP to next</p>
                   </div>
                   <div className="h-2.5 sm:h-3 w-full bg-stone-200 dark:bg-stone-800 rounded-full overflow-hidden">
-=======
-                      <p className="text-sm font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider">Current Level</p>
-                      <h3 className="text-2xl font-bold">Level {currentLevel}</h3>
-                    </div>
-                    <p className="text-sm font-medium text-stone-500">{xpToNext} XP to next</p>
-                  </div>
-                  <div className="h-3 w-full bg-stone-200 dark:bg-stone-800 rounded-full overflow-hidden">
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
                     <motion.div initial={{ width: 0 }} whileInView={{ width: `${xpProgress}%` }} transition={{ duration: 1 }} className="h-full rounded-full bg-gradient-to-r from-purple-400 to-pink-500" />
                   </div>
                 </div>
               </GlassCard>
 
               {/* Action Buttons */}
-<<<<<<< HEAD
               <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 <button onClick={() => setShowAddForm(true)} className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl border border-white/60 dark:border-white/10 rounded-2xl sm:rounded-3xl p-3 sm:p-4 flex flex-col items-center justify-center gap-1.5 sm:gap-2 hover:bg-white/60 dark:hover:bg-slate-800/60 transition-all shadow-sm hover:shadow-md hover:-translate-y-1">
                   <Plus className="w-5 h-5 sm:w-6 sm:h-6 text-teal-500" />
@@ -940,16 +586,6 @@ export default function HabitTracker() {
                 <button onClick={() => setShowPrintModal(true)} className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl border border-white/60 dark:border-white/10 rounded-2xl sm:rounded-3xl p-3 sm:p-4 flex flex-col items-center justify-center gap-1.5 sm:gap-2 hover:bg-white/60 dark:hover:bg-slate-800/60 transition-all shadow-sm hover:shadow-md hover:-translate-y-1">
                   <Printer className="w-5 h-5 sm:w-6 sm:h-6 text-stone-500 dark:text-stone-400" />
                   <span className="text-xs sm:text-sm font-semibold">Print</span>
-=======
-              <div className="grid grid-cols-2 gap-4">
-                <button onClick={() => setShowAddForm(true)} className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl border border-white/60 dark:border-white/10 rounded-3xl p-4 flex flex-col items-center justify-center gap-2 hover:bg-white/60 dark:hover:bg-slate-800/60 transition-all shadow-sm hover:shadow-md hover:-translate-y-1">
-                  <Plus className="w-6 h-6 text-teal-500" />
-                  <span className="text-sm font-semibold">Add Habit</span>
-                </button>
-                <button onClick={() => setShowPrintModal(true)} className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl border border-white/60 dark:border-white/10 rounded-3xl p-4 flex flex-col items-center justify-center gap-2 hover:bg-white/60 dark:hover:bg-slate-800/60 transition-all shadow-sm hover:shadow-md hover:-translate-y-1">
-                  <Printer className="w-6 h-6 text-stone-500 dark:text-stone-400" />
-                  <span className="text-sm font-semibold">Print</span>
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
                 </button>
               </div>
             </div>
@@ -957,11 +593,7 @@ export default function HabitTracker() {
 
           {/* 3. PREMIUM STATISTICS */}
           <ScrollSection>
-<<<<<<< HEAD
             <h2 className="text-lg sm:text-2xl font-bold mb-4 sm:mb-6 flex items-center gap-2"><Activity className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" /> Performance Metrics</h2>
-=======
-            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2"><Activity className="w-6 h-6 text-orange-500" /> Performance Metrics</h2>
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               <StatCard icon={Check} label="Total Check-ins" value={totalCheckins} sub="Lifetime" color="teal" />
               <StatCard icon={Flame} label="Current Streak" value={`${currentStreak}d`} sub="Keep going!" color="orange" />
@@ -973,11 +605,7 @@ export default function HabitTracker() {
           {/* 4. HABITS TRACKER (WEEKLY/MONTHLY) */}
           <ScrollSection id="habits">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
-<<<<<<< HEAD
               <h2 className="text-xl sm:text-3xl font-bold tracking-tight">Your Habits</h2>
-=======
-              <h2 className="text-3xl font-bold tracking-tight">Your Habits</h2>
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
               <div className="flex bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl p-1 rounded-full border border-white/60 dark:border-white/10">
                 <button onClick={() => setViewMode('weekly')} className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${viewMode === 'weekly' ? 'bg-white dark:bg-stone-800 shadow-sm text-teal-600 dark:text-teal-400' : 'text-stone-500 hover:text-stone-700 dark:hover:text-stone-300'}`}>Weekly</button>
                 <button onClick={() => setViewMode('monthly')} className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${viewMode === 'monthly' ? 'bg-white dark:bg-stone-800 shadow-sm text-teal-600 dark:text-teal-400' : 'text-stone-500 hover:text-stone-700 dark:hover:text-stone-300'}`}>Monthly</button>
@@ -988,24 +616,14 @@ export default function HabitTracker() {
               {viewMode === 'weekly' && (
                 <div className="space-y-8">
                   {/* Weekly Header */}
-<<<<<<< HEAD
                   <div className="flex items-center mb-2 px-1 sm:px-2">
                     <div className="w-16 sm:w-48 shrink-0" />
-=======
-                  <div className="flex items-center mb-2 px-2">
-                    <div className="w-32 sm:w-48 shrink-0" />
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
                     {weekDates.map((d, i) => {
                       const isToday = dateKey(d) === todayKey;
                       return (
                         <div key={i} className="flex-1 text-center">
-<<<<<<< HEAD
                           <div className={`text-[10px] sm:text-xs font-bold uppercase tracking-widest ${isToday ? 'text-teal-600 dark:text-teal-400' : 'text-stone-400 dark:text-stone-500'}`}>{dayNamesShort[d.getDay()]}</div>
                           <div className={`text-sm sm:text-lg mt-1 font-medium ${isToday ? 'text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/30 w-6 h-6 sm:w-8 sm:h-8 mx-auto rounded-full flex items-center justify-center' : 'text-stone-500 dark:text-stone-400'}`}>{d.getDate()}</div>
-=======
-                          <div className={`text-xs font-bold uppercase tracking-widest ${isToday ? 'text-teal-600 dark:text-teal-400' : 'text-stone-400 dark:text-stone-500'}`}>{dayNamesShort[d.getDay()]}</div>
-                          <div className={`text-lg mt-1 font-medium ${isToday ? 'text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/30 w-8 h-8 mx-auto rounded-full flex items-center justify-center' : 'text-stone-500 dark:text-stone-400'}`}>{d.getDate()}</div>
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
                         </div>
                       );
                     })}
@@ -1021,7 +639,6 @@ export default function HabitTracker() {
                           const Icon = ICONS[habit.icon] || Footprints;
                           const color = COLORS[habit.color] || COLORS.teal;
                           const streak = getStreak(habit.id);
-<<<<<<< HEAD
                           const isExpanded = expandedHabitId === habit.id;
                           return (
                             <motion.div layout key={habit.id}>
@@ -1087,35 +704,6 @@ export default function HabitTracker() {
                                   </motion.div>
                                 )}
                               </AnimatePresence>
-=======
-                          return (
-                            <motion.div layout key={habit.id} className="flex items-center bg-white/60 dark:bg-stone-800/50 hover:bg-white dark:hover:bg-stone-800 rounded-2xl p-3 transition-colors border border-transparent hover:border-stone-200 dark:hover:border-stone-700 group shadow-sm">
-                              <div className="w-32 sm:w-48 shrink-0 flex items-center gap-3 pr-2">
-                                <div className={`w-10 h-10 rounded-xl ${color.light} flex items-center justify-center shrink-0`}>
-                                  <Icon className={`w-5 h-5 ${color.text}`} />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <p className="text-sm font-bold text-stone-800 dark:text-stone-100 truncate">{habit.name}</p>
-                                  <div className="flex items-center gap-2 mt-0.5">
-                                    {streak > 0 && <span className="text-[10px] font-semibold text-orange-500 flex items-center gap-0.5 bg-orange-50 dark:bg-orange-900/30 px-1.5 py-0.5 rounded"><Flame className="w-3 h-3"/> {streak}</span>}
-                                  </div>
-                                </div>
-                                <div className="hidden sm:flex opacity-0 group-hover:opacity-100 transition-opacity items-center gap-1">
-                                  <button onClick={() => { setEditingHabitId(habit.id); setNewName(habit.name); setNewIcon(habit.icon); setNewColor(habit.color); setNewCategory(habit.category || 'Anytime'); setShowAddForm(true); }} className="p-1.5 text-stone-400 hover:text-teal-500 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-700"><Edit3 className="w-3.5 h-3.5" /></button>
-                                  <button onClick={() => deleteHabit(habit.id)} className="p-1.5 text-stone-400 hover:text-rose-500 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-700"><Trash2 className="w-3.5 h-3.5" /></button>
-                                </div>
-                              </div>
-
-                              {weekDates.map((d, i) => {
-                                const k = dateKey(d);
-                                const entry = getEntry(checkins, k, habit.id);
-                                return (
-                                  <div key={i} className="flex-1 flex justify-center relative">
-                                    <PremiumCheckinCell status={entry.status} note={entry.note} color={color} isFuture={k > todayKey} isLocked={k !== todayKey} onToggle={() => toggleCheckin(habit.id, k)} onNote={() => setCheckinNote(habit.id, k)} />
-                                  </div>
-                                );
-                              })}
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
                             </motion.div>
                           );
                         })}
@@ -1150,11 +738,7 @@ export default function HabitTracker() {
                               const entry = getEntry(checkins, k, habit.id);
                               return (
                                 <div key={k} className="w-7 flex justify-center">
-<<<<<<< HEAD
                                   <button onClick={() => { if(k <= todayKey) handleToggle(habit.id, k); }} disabled={k > todayKey} className={`w-5 h-5 rounded-md border transition-all ${k > todayKey ? 'border-transparent bg-stone-100/50 dark:bg-stone-800/30' : entry.status === 'checked' ? `${color.solid} border-transparent scale-110 shadow-sm` : entry.status === 'skipped' ? 'border-dashed border-stone-300 bg-stone-100 dark:border-stone-600 dark:bg-stone-800' : 'border-stone-200 bg-white dark:border-stone-700 dark:bg-stone-900 hover:border-stone-400'}`} />
-=======
-                                  <button onClick={() => { if(k <= todayKey) toggleCheckin(habit.id, k); }} disabled={k > todayKey} className={`w-5 h-5 rounded-md border transition-all ${k > todayKey ? 'border-transparent bg-stone-100/50 dark:bg-stone-800/30' : entry.status === 'checked' ? `${color.solid} border-transparent scale-110 shadow-sm` : entry.status === 'skipped' ? 'border-dashed border-stone-300 bg-stone-100 dark:border-stone-600 dark:bg-stone-800' : 'border-stone-200 bg-white dark:border-stone-700 dark:bg-stone-900 hover:border-stone-400'}`} />
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
                                 </div>
                               );
                             })}
@@ -1168,7 +752,6 @@ export default function HabitTracker() {
             </GlassCard>
           </ScrollSection>
 
-<<<<<<< HEAD
           {/* 5. VICES — HABITS TO BREAK */}
           {habits.filter(h => h.type === 'negative').length > 0 && (
             <ScrollSection id="vices">
@@ -1208,30 +791,12 @@ export default function HabitTracker() {
                          <motion.div initial={{ height: 0 }} whileInView={{ height: `${maxWeeklyCount > 0 ? (d.count / maxWeeklyCount) * 100 : 0}%` }} transition={{ duration: 0.8, delay: i * 0.1 }} className="w-full bg-gradient-to-t from-teal-500 to-sky-400 rounded-t-xl" />
                       </div>
                       <span className="text-[10px] sm:text-xs font-semibold text-stone-500">{d.day}</span>
-=======
-          {/* 5. ANALYTICS DASHBOARD */}
-          <ScrollSection id="analytics">
-            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2"><BarChart2 className="w-6 h-6 text-sky-500" /> Analytics</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Weekly Bar Chart */}
-              <GlassCard className="p-6 h-80 flex flex-col">
-                <h3 className="text-sm font-bold text-stone-500 uppercase tracking-widest mb-6">This Week's Activity</h3>
-                <div className="flex-1 flex items-end justify-between gap-2 px-2">
-                  {weeklyData.map((d, i) => (
-                    <div key={i} className="flex flex-col items-center gap-3 w-full group relative">
-                      <div className="absolute -top-8 bg-stone-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">{d.count}</div>
-                      <div className="w-full bg-stone-100 dark:bg-stone-800 rounded-t-xl overflow-hidden relative flex items-end justify-center" style={{ height: '180px' }}>
-                         <motion.div initial={{ height: 0 }} whileInView={{ height: `${maxWeeklyCount > 0 ? (d.count / maxWeeklyCount) * 100 : 0}%` }} transition={{ duration: 0.8, delay: i * 0.1 }} className="w-full bg-gradient-to-t from-teal-500 to-sky-400 rounded-t-xl" />
-                      </div>
-                      <span className="text-xs font-semibold text-stone-500">{d.day}</span>
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
                     </div>
                   ))}
                 </div>
               </GlassCard>
 
               {/* Insights Component */}
-<<<<<<< HEAD
               <GlassCard className="p-4 sm:p-6 flex flex-col justify-between">
                 <div>
                   <h3 className="text-xs sm:text-sm font-bold text-stone-500 uppercase tracking-widest mb-4 sm:mb-6 flex items-center gap-2"><Sparkles className="w-4 h-4 text-amber-500"/> AI Insights</h3>
@@ -1240,22 +805,11 @@ export default function HabitTracker() {
                       <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.2 }} key={idx} className="flex gap-2.5 sm:gap-3 items-start bg-white/50 dark:bg-stone-800/50 p-3 sm:p-4 rounded-2xl border border-white/50 dark:border-white/5 shadow-sm">
                         <div className="w-2 h-2 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 mt-1.5 shrink-0" />
                         <p className="text-xs sm:text-sm text-stone-700 dark:text-stone-300 font-medium leading-relaxed">{insight}</p>
-=======
-              <GlassCard className="p-6 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-stone-500 uppercase tracking-widest mb-6 flex items-center gap-2"><Sparkles className="w-4 h-4 text-amber-500"/> AI Insights</h3>
-                  <div className="space-y-4">
-                    {insights.map((insight, idx) => (
-                      <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.2 }} key={idx} className="flex gap-3 items-start bg-white/50 dark:bg-stone-800/50 p-4 rounded-2xl border border-white/50 dark:border-white/5 shadow-sm">
-                        <div className="w-2 h-2 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 mt-1.5 shrink-0" />
-                        <p className="text-sm text-stone-700 dark:text-stone-300 font-medium leading-relaxed">{insight}</p>
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
                       </motion.div>
                     ))}
                   </div>
                 </div>
               </GlassCard>
-<<<<<<< HEAD
 
               {/* Streak Projection */}
               <GlassCard className="p-4 sm:p-6 flex flex-col justify-between">
@@ -1301,15 +855,6 @@ export default function HabitTracker() {
           <ScrollSection id="achievements">
             <h2 className="text-lg sm:text-2xl font-bold mb-4 sm:mb-6 flex items-center gap-2"><Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" /> Achievements</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-=======
-            </div>
-          </ScrollSection>
-
-          {/* 6. ACHIEVEMENTS */}
-          <ScrollSection id="achievements">
-            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2"><Trophy className="w-6 h-6 text-yellow-500" /> Achievements</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
               {ACHIEVEMENTS.map(ach => {
                 const isUnlocked = ach.isStreak ? bestStreakEver >= ach.req : totalCheckins >= ach.req;
                 const progress = ach.isStreak ? bestStreakEver : totalCheckins;
@@ -1317,7 +862,6 @@ export default function HabitTracker() {
                 const color = COLORS[ach.color];
 
                 return (
-<<<<<<< HEAD
                   <GlassCard key={ach.id} hover={false} className={`p-3 sm:p-5 relative overflow-hidden flex flex-col items-center text-center transition-all duration-500 ${isUnlocked ? 'border-yellow-300/50 dark:border-yellow-500/30' : 'opacity-70 grayscale-[0.5]'}`}>
                     {isUnlocked && <div className={`absolute inset-0 bg-gradient-to-br ${color.grad} opacity-[0.05]`} />}
                     <div className={`w-11 h-11 sm:w-16 sm:h-16 rounded-full mb-2 sm:mb-3 flex items-center justify-center text-lg sm:text-3xl shadow-inner relative z-10 ${isUnlocked ? color.light : 'bg-stone-100 dark:bg-stone-800'}`}>
@@ -1325,15 +869,6 @@ export default function HabitTracker() {
                     </div>
                     <h4 className={`font-bold text-xs sm:text-sm mb-1 ${isUnlocked ? 'text-stone-900 dark:text-white' : 'text-stone-500'}`}>{ach.title}</h4>
                     <p className="text-[9px] sm:text-[10px] text-stone-500 font-medium mb-3 sm:mb-4 h-7 sm:h-8">{ach.desc}</p>
-=======
-                  <GlassCard key={ach.id} hover={false} className={`p-5 relative overflow-hidden flex flex-col items-center text-center transition-all duration-500 ${isUnlocked ? 'border-yellow-300/50 dark:border-yellow-500/30' : 'opacity-70 grayscale-[0.5]'}`}>
-                    {isUnlocked && <div className={`absolute inset-0 bg-gradient-to-br ${color.grad} opacity-[0.05]`} />}
-                    <div className={`w-16 h-16 rounded-full mb-3 flex items-center justify-center text-3xl shadow-inner relative z-10 ${isUnlocked ? color.light : 'bg-stone-100 dark:bg-stone-800'}`}>
-                      {ach.icon}
-                    </div>
-                    <h4 className={`font-bold text-sm mb-1 ${isUnlocked ? 'text-stone-900 dark:text-white' : 'text-stone-500'}`}>{ach.title}</h4>
-                    <p className="text-[10px] text-stone-500 font-medium mb-4 h-8">{ach.desc}</p>
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
                     <div className="w-full bg-stone-200 dark:bg-stone-800 h-1.5 rounded-full overflow-hidden mt-auto">
                       <motion.div initial={{ width: 0 }} whileInView={{ width: `${pct}%` }} className={`h-full ${isUnlocked ? color.solid : 'bg-stone-400'}`} />
                     </div>
@@ -1343,7 +878,6 @@ export default function HabitTracker() {
             </div>
           </ScrollSection>
 
-<<<<<<< HEAD
           {/* 8. ACCOUNTABILITY & SOCIAL */}
           <ScrollSection id="accountability">
             <h2 className="text-lg sm:text-2xl font-bold mb-4 sm:mb-6 flex items-center gap-2"><Shield className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-500" /> Accountability</h2>
@@ -1369,16 +903,6 @@ export default function HabitTracker() {
                   <motion.div key={quoteIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.5 }} className="relative z-10">
                     <p className="text-base sm:text-2xl font-serif text-stone-800 dark:text-stone-200 italic leading-relaxed mb-4 sm:mb-6">"{QUOTES[quoteIndex].text}"</p>
                     <p className="font-bold text-xs sm:text-sm uppercase tracking-widest text-teal-600 dark:text-teal-400">— {QUOTES[quoteIndex].author}</p>
-=======
-          {/* MOTIVATIONAL QUOTE */}
-          <ScrollSection>
-             <GlassCard className="max-w-3xl mx-auto p-8 sm:p-12 text-center relative overflow-hidden border-t-4 border-t-teal-500">
-               <QuoteIcon className="w-12 h-12 text-teal-500/20 absolute top-4 left-4" />
-               <AnimatePresence mode="wait">
-                  <motion.div key={quoteIndex} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.5 }}>
-                    <p className="text-xl sm:text-2xl font-serif text-stone-800 dark:text-stone-200 italic leading-relaxed mb-6">"{QUOTES[quoteIndex].text}"</p>
-                    <p className="font-bold text-sm uppercase tracking-widest text-teal-600 dark:text-teal-400">— {QUOTES[quoteIndex].author}</p>
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
                   </motion.div>
                </AnimatePresence>
              </GlassCard>
@@ -1416,7 +940,6 @@ export default function HabitTracker() {
         <AnimatePresence>
           {showSettings && (
             <ModalOverlay onClose={() => setShowSettings(false)}>
-<<<<<<< HEAD
               <div className="p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto">
                 <h3 className="text-xl font-bold mb-6 flex items-center gap-2"><Settings className="w-5 h-5"/> Settings</h3>
                 <div className="space-y-6">
@@ -1448,11 +971,6 @@ export default function HabitTracker() {
                   <hr className="border-stone-200 dark:border-stone-700" />
 
                   {/* Account */}
-=======
-              <div className="p-6 w-full max-w-sm">
-                <h3 className="text-xl font-bold mb-6 flex items-center gap-2"><Settings className="w-5 h-5"/> Account Settings</h3>
-                <div className="space-y-6">
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
                   <div className="pt-2">
                     <button onClick={() => { signOut(auth); setShowSettings(false); }} className="w-full py-3 bg-rose-50 hover:bg-rose-100 dark:bg-rose-900/20 dark:hover:bg-rose-900/40 text-rose-600 rounded-xl font-bold transition-colors flex items-center justify-center gap-2">
                       <LogOut className="w-4 h-4" /> Sign Out from Device
@@ -1527,11 +1045,7 @@ export default function HabitTracker() {
                      <input type="number" value={pAge} onChange={(e) => setPAge(e.target.value)} placeholder="Age" className="w-full px-4 py-3 rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 outline-none" />
                      <input type="number" value={pWeight} onChange={(e) => setPWeight(e.target.value)} placeholder="Weight (kg)" className="w-full px-4 py-3 rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 outline-none" />
                   </div>
-<<<<<<< HEAD
                   <button onClick={() => { saveProfile({ name: pName.trim(), age: Number(pAge), weight: Number(pWeight) }); setShowProfileForm(false); }} className="w-full py-3 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-xl font-bold mt-4">Save Changes</button>
-=======
-                  <button onClick={() => { setProfile({ name: pName.trim(), age: pAge, weight: pWeight, height: pHeight }); setShowProfileForm(false); }} className="w-full py-3 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-xl font-bold mt-4">Save Changes</button>
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
                 </div>
               </div>
             </ModalOverlay>
@@ -1573,7 +1087,6 @@ export default function HabitTracker() {
 const StatCard = ({ icon: Icon, label, value, sub, color }) => {
   const c = COLORS[color];
   return (
-<<<<<<< HEAD
     <GlassCard className="p-3 sm:p-5 flex flex-col justify-between h-full" hover={true}>
       <div className="flex items-start justify-between mb-2 sm:mb-4">
         <div className={`w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl ${c.light} flex items-center justify-center`}>
@@ -1584,18 +1097,6 @@ const StatCard = ({ icon: Icon, label, value, sub, color }) => {
         <h4 className="text-xl sm:text-3xl font-black text-stone-900 dark:text-white tracking-tight">{value}</h4>
         <p className="text-[11px] sm:text-sm font-bold text-stone-500 uppercase tracking-wider mt-1">{label}</p>
         {sub && <p className="text-[10px] sm:text-xs text-stone-400 font-medium mt-1">{sub}</p>}
-=======
-    <GlassCard className="p-5 flex flex-col justify-between h-full" hover={true}>
-      <div className="flex items-start justify-between mb-4">
-        <div className={`w-12 h-12 rounded-2xl ${c.light} flex items-center justify-center`}>
-          <Icon className={`w-6 h-6 ${c.text}`} />
-        </div>
-      </div>
-      <div>
-        <h4 className="text-3xl font-black text-stone-900 dark:text-white tracking-tight">{value}</h4>
-        <p className="text-sm font-bold text-stone-500 uppercase tracking-wider mt-1">{label}</p>
-        {sub && <p className="text-xs text-stone-400 font-medium mt-1">{sub}</p>}
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
       </div>
     </GlassCard>
   );
@@ -1636,19 +1137,11 @@ const PremiumCheckinCell = ({ status, note, color, isFuture, isLocked, onToggle,
       <button
         disabled={disabled} onClick={handleToggle} onContextMenu={(e) => { e.preventDefault(); if(!disabled) onNote(); }}
         onMouseDown={start} onMouseUp={cancel} onMouseLeave={cancel} onTouchStart={start} onTouchEnd={cancel}
-<<<<<<< HEAD
         className={`w-7 h-7 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-lg sm:rounded-[18px] flex items-center justify-center transition-all duration-300 border-2 ${visual} focus:outline-none focus:ring-4 focus:ring-${color.solid.split('-')[1]}-500/30`}
       >
         {status === 'checked' && <motion.div initial={{scale:0}} animate={{scale:1}}><Check className="w-3.5 h-3.5 sm:w-5 sm:h-5 md:w-6 md:h-6" strokeWidth={3} /></motion.div>}
         {status === 'skipped' && <Minus className="w-3 h-3 sm:w-4 sm:h-4" strokeWidth={3} />}
         {note && <span className="absolute top-0.5 right-0.5 sm:top-1 sm:right-1 w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-amber-400 border-2 border-white dark:border-stone-800" />}
-=======
-        className={`w-10 h-10 sm:w-12 sm:h-12 rounded-2xl sm:rounded-[20px] flex items-center justify-center transition-all duration-300 border-2 ${visual} focus:outline-none focus:ring-4 focus:ring-${color.solid.split('-')[1]}-500/30`}
-      >
-        {status === 'checked' && <motion.div initial={{scale:0}} animate={{scale:1}}><Check className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={3} /></motion.div>}
-        {status === 'skipped' && <Minus className="w-4 h-4" strokeWidth={3} />}
-        {note && <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-amber-400 border-2 border-white dark:border-stone-800" />}
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
       </button>
     </div>
   );
@@ -1670,7 +1163,6 @@ const LoadingScreen = ({ theme }) => (
   </div>
 );
 
-<<<<<<< HEAD
 const ErrorScreen = ({ error, theme, onRetry }) => (
   <div className="min-h-screen flex items-center justify-center p-8">
     <CinematicBackground theme={theme} />
@@ -1686,8 +1178,6 @@ const ErrorScreen = ({ error, theme, onRetry }) => (
   </div>
 );
 
-=======
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
 // ============================================================================
 // CINEMATIC BACKGROUND (ENHANCED)
 // ============================================================================
@@ -1728,7 +1218,6 @@ export const CinematicBackground = ({ theme = 'light' }) => {
 
 function AdminDashboard({ handleSignOut }) {
   const [allUsers, setAllUsers] = React.useState([]);
-<<<<<<< HEAD
   const [adminCheck, setAdminCheck] = React.useState(null);
   const currentUser = auth.currentUser;
 
@@ -1778,19 +1267,6 @@ function AdminDashboard({ handleSignOut }) {
       </div>
     );
   }
-=======
-  React.useEffect(() => {
-    const fetchAllData = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, "users"));
-        const usersData = [];
-        querySnapshot.forEach((doc) => usersData.push({ id: doc.id, ...doc.data() }));
-        setAllUsers(usersData);
-      } catch (error) { console.error("Error:", error); }
-    };
-    fetchAllData();
-  }, []);
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
 
   return (
     <div className="min-h-screen bg-stone-50 p-8 font-sans">
@@ -1803,15 +1279,9 @@ function AdminDashboard({ handleSignOut }) {
           <h2 className="text-xl font-bold text-stone-500 uppercase tracking-widest mb-6">Total Users: {allUsers.length}</h2>
           <div className="space-y-2">
             {allUsers.map((u, i) => (
-<<<<<<< HEAD
               <div key={i} className="p-4 bg-stone-50 rounded-2xl flex justify-between items-center border border-stone-100">
                 <span className="font-bold text-stone-800">{u.name} <span className="text-stone-400 font-normal ml-2 text-sm">{u.id}</span></span>
                 <span className="bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm font-bold">{u.habitCount} Habits</span>
-=======
-              <div key={u.id} className="p-4 bg-stone-50 rounded-2xl flex justify-between items-center border border-stone-100">
-                <span className="font-bold text-stone-800">{u.profileData?.name || `User ${i + 1}`} <span className="text-stone-400 font-normal ml-2 text-sm">{u.id}</span></span>
-                <span className="bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm font-bold">{u.trackerData?.habits?.length || 0} Habits</span>
->>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
               </div>
             ))}
           </div>
