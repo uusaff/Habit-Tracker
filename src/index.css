@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}

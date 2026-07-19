@@ -1,0 +1,30 @@
+# dependencies
+node_modules/
+
+# production
+dist/
+
+# logs
+logs
+*.log
+npm-debug.log*
+
+# environment variables
+.env
+.env.local
+.env.*.local
+
+# editor files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# misc
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
