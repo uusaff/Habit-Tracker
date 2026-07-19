@@ -1,3 +1,32 @@
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+=======
+>>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
 # dependencies
 node_modules/
 
@@ -12,7 +41,10 @@ npm-debug.log*
 # environment variables
 .env
 .env.local
+<<<<<<< HEAD
 .env.*.local
+=======
+>>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
 
 # editor files
 .vscode/
@@ -21,6 +53,7 @@ npm-debug.log*
 # OS files
 .DS_Store
 Thumbs.db
+<<<<<<< HEAD
 
 # misc
 *.suo
@@ -28,3 +61,6 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+=======
+>>>>>>> daeedca6e0d595ca70e5001dada81d14b0b03801
+>>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0

@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+<<<<<<< HEAD
 @custom-variant dark (&:is(.dark *));
 
 @keyframes shimmer {
@@ -7,3 +8,6 @@
     transform: translateX(100%);
   }
 }
+=======
+@custom-variant dark (&:is(.dark *));
+>>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0

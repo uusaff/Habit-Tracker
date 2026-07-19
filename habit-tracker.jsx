@@ -1,9 +1,17 @@
+<<<<<<< HEAD
 import React, { useState, useEffect, useMemo } from 'react';
+=======
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+>>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Footprints, BookOpen, Moon, Leaf, Dumbbell, Droplet, Brain, Heart,
   Music, Camera, Coffee, PenLine, Plus, Trash2, Check,
+<<<<<<< HEAD
   Flame, TrendingUp, Github, Calendar, CalendarDays, Lock
+=======
+  Quote as QuoteIcon, Flame, TrendingUp, Github, Calendar, CalendarDays, Lock
+>>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
 } from 'lucide-react';
 
 const STORAGE_KEY = 'tropical-habit-tracker-v2';
@@ -19,6 +27,18 @@ const COLORS = {
   rose:   { grad: 'from-rose-400 to-pink-400',     solid: 'bg-rose-500',    light: 'bg-rose-50',    text: 'text-rose-600' },
   sky:    { grad: 'from-sky-400 to-blue-400',      solid: 'bg-sky-500',     light: 'bg-sky-50',     text: 'text-sky-600' },
 };
+<<<<<<< HEAD
+=======
+const COLOR_KEYS = Object.keys(COLORS);
+
+const QUOTES = [
+  'Discipline is choosing between what you want now and what you want most.',
+  'Small daily improvements lead to staggering long-term results.',
+  'Motivation gets you started. Discipline keeps you going.',
+  "You don't have to be extreme, just consistent.",
+  'The pain of discipline weighs ounces; the pain of regret weighs tons.',
+];
+>>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
 
 const DEFAULT_HABITS = [
   { id: 'h1', name: 'Daily Steps', icon: 'Footprints', color: 'teal' },
@@ -77,7 +97,11 @@ function useTrackerStorage() {
           const local = localStorage.getItem(STORAGE_KEY);
           setData(local ? JSON.parse(local) : DEFAULT_DATA);
         }
+<<<<<<< HEAD
       } catch {
+=======
+      } catch (e) {
+>>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
         if (mounted) setData(DEFAULT_DATA);
       } finally {
         loadedRef.current = true;
@@ -106,11 +130,26 @@ function useTrackerStorage() {
 
 export default function HabitTracker() {
   const [data, setData] = useTrackerStorage();
+<<<<<<< HEAD
+=======
+  const [quoteIndex, setQuoteIndex] = useState(0);
+>>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
   const [showAddForm, setShowAddForm] = useState(false);
   const [viewMode, setViewMode] = useState('week'); // 'week' | 'month'
   
   const [newName, setNewName] = useState('');
   const [newIcon, setNewIcon] = useState('Footprints');
+<<<<<<< HEAD
+=======
+  const [newColor, setNewColor] = useState('teal');
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setQuoteIndex((i) => (i + 1) % QUOTES.length);
+    }, 8000);
+    return () => clearInterval(interval);
+  }, []);
+>>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
 
   const today = useMemo(() => new Date(), []);
   const todayKey = dateKey(today);
@@ -134,7 +173,15 @@ export default function HabitTracker() {
   const { habits, checkins } = data;
 
   const toggleCheckin = (habitId, dKey) => {
+<<<<<<< HEAD
     if (dKey !== todayKey) return;
+=======
+    // 🛑 STRICT VALIDATION: Agar click hone wali date aaj ki nahi hai, toh alert dikhao aur return kar jao.
+    if (dKey !== todayKey) {
+      alert("Validation Locked: You can only update habits for the CURRENT active date.");
+      return;
+    }
+>>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
 
     setData((prev) => {
       const day = prev.checkins[dKey] || {};

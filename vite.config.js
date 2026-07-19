@@ -7,6 +7,7 @@ export default defineConfig({
     tailwindcss(),
     react(),
   ],
+<<<<<<< HEAD
   server: {
     headers: {
       'X-Content-Type-Options': 'nosniff',
@@ -15,4 +16,6 @@ export default defineConfig({
       'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
     },
   },
+=======
+>>>>>>> d1ac35b2057b4369ccdfb5030b233b32f72e7de0
 })
